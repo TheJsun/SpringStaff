@@ -3,17 +3,15 @@ import DepartmentRow from "../DepartmentRow/DepartmentRow";
 import classes from "./DepartmentList.module.scss";
 
 interface DepartmentListProps {
-  // The current page, rendered as rows.
   departments: DepartmentResponse[];
-  // Every department. Kept separate from the page slice because the rows'
-  // duplicate-name guard has to see names that aren't on screen, and because
-  // the empty state is about the whole list, not the current page.
   allDepartments: DepartmentResponse[];
   staffCounts: Map<number, number>;
   isCountsLoading: boolean;
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
+  isAdmin: boolean;
+  onEdit: (department: DepartmentResponse) => void;
 }
 
 export default function DepartmentList({
@@ -24,12 +22,15 @@ export default function DepartmentList({
   isLoading,
   isError,
   error,
+  isAdmin,
+  onEdit,
 }: DepartmentListProps) {
   return (
     <section className={classes.departmentListContainer}>
       <header className={classes.departmentListHeader}>
         <p>Department</p>
-        <p className={classes.staff}>Staff</p>
+        <p className={classes.lead}>Lead</p>
+        <p className={classes.people}>People</p>
         <p></p>
       </header>
       <div className={classes.departmentList}>
@@ -45,9 +46,7 @@ export default function DepartmentList({
         )}
 
         {!isLoading && !isError && allDepartments.length === 0 && (
-          <h4 className={classes.emptyListMessage}>
-            No departments yet, add one above.
-          </h4>
+          <h4 className={classes.emptyListMessage}>No departments yet.</h4>
         )}
 
         {!isLoading &&
@@ -58,7 +57,8 @@ export default function DepartmentList({
               department={dept}
               staffCount={staffCounts.get(dept.id) ?? 0}
               isCountLoading={isCountsLoading}
-              allDepartments={allDepartments}
+              isAdmin={isAdmin}
+              onEdit={onEdit}
             />
           ))}
       </div>

@@ -1,28 +1,19 @@
 @use "../../scss/mixins/media" as q;
 @use "../../scss/mixins/responsive-column" as col;
 
-// Same CSS-var contract as EmployeeList: the container declares the tracks and
-// DepartmentRow consumes them, so the header and rows can't drift apart.
-//
-// Every track is fixed or fr - never auto/min-content. The header and each row
-// are separate grids, so a content-sized track resolves to a different width in
-// each (the header's actions cell is empty, a row's holds two buttons), and
-// because fr only divides what's left over, that knocked the Staff column out
-// of alignment with its header. EmployeeList avoids the same trap with a fixed
-// 32px kebab track.
 .departmentListContainer {
-  --department-actions-width: 12.5rem; // fits "Saving..." + "Cancel"
-  --department-grid-columns: minmax(0, 1fr);
-  --department-row-min-height: 64px;
+  --department-actions-width: 2.5rem;
+  --department-grid-columns: minmax(0, 1fr) var(--department-actions-width);
+  --department-row-min-height: 72px;
 
   @include q.sm {
-    --department-grid-columns: minmax(0, 1fr) var(--department-actions-width);
+    --department-grid-columns: minmax(0, 1fr) 7rem
+      var(--department-actions-width);
   }
 
   @include q.md {
-    --department-grid-columns: minmax(0, 1fr) 5rem var(
-        --department-actions-width
-      );
+    --department-grid-columns: minmax(0, 2fr) minmax(0, 1.4fr) 7rem
+      var(--department-actions-width);
   }
 }
 
@@ -35,14 +26,24 @@
   color: grey;
   font-weight: 400;
   font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 
   p {
     margin: 0;
   }
 }
 
-.staff {
+.lead {
   @include col.column-from-md(block);
+}
+
+.people {
+  display: none;
+
+  @include q.sm {
+    display: block;
+  }
 }
 
 .departmentList {

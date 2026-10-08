@@ -17,11 +17,9 @@ function App() {
           <Route element={<RequireAuth />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
+            <Route path="/departments" element={<DepartmentsPage />} />
 
-            {/* GET endpoints are open to any authenticated user; everything
-                below is admin-only on the backend, so gate it here too. */}
             <Route element={<RequireAdmin />}>
-              <Route path="/departments" element={<DepartmentsPage />} />
               <Route path="/employees/new" element={<CreateEmployeePage />} />
               <Route
                 path="/employees/edit/:id"

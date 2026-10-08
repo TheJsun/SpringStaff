@@ -27,10 +27,7 @@ public record EmployeeResponse(
   public static EmployeeResponse of(Employee employee) {
     DepartmentResponse department =
       employee.getDepartment() != null
-        ? new DepartmentResponse(
-            employee.getDepartment().getId(),
-            employee.getDepartment().getName()
-          )
+        ? DepartmentResponse.of(employee.getDepartment())
         : null;
     return new EmployeeResponse(
       employee.getId(),

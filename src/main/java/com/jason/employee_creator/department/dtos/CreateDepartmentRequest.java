@@ -9,6 +9,11 @@ public class CreateDepartmentRequest {
   @Size(max = 50)
   private String name;
 
+  @Size(max = 255)
+  private String description;
+
+  private Long leadId;
+
   public CreateDepartmentRequest() {}
 
   public String getName() {
@@ -17,5 +22,21 @@ public class CreateDepartmentRequest {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public Long getLeadId() {
+    return leadId;
+  }
+
+  public void setLeadId(Long leadId) {
+    this.leadId = leadId;
   }
 }

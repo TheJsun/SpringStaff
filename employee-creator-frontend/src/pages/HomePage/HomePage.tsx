@@ -135,12 +135,6 @@ const HomePage = () => {
           isAdmin ? (
             <>
               <Button
-                variant="secondary"
-                onClick={() => navigate("/departments")}
-              >
-                Manage Departments
-              </Button>
-              <Button
                 variant="accent"
                 onClick={() => navigate("/employees/new")}
               >

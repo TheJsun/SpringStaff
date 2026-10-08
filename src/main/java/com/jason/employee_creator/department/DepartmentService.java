@@ -7,6 +7,7 @@ import com.jason.employee_creator.department.dtos.CreateDepartmentRequest;
 import com.jason.employee_creator.department.dtos.UpdateDepartmentRequest;
 import com.jason.employee_creator.department.entities.Department;
 import com.jason.employee_creator.employee.EmployeeRepository;
+import com.jason.employee_creator.employee.entities.Employee;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -53,6 +54,7 @@ public class DepartmentService {
     }
 
     Department createdDepartment = this.mapper.map(data, Department.class);
+    createdDepartment.setLead(resolveLead(data.getLeadId()));
     this.departmentRepository.saveAndFlush(createdDepartment);
     log.info(
       "Created department id={} name={}",
@@ -79,8 +81,20 @@ public class DepartmentService {
     Department existing = this.findById(id);
 
     this.mapper.map(data, existing);
+    existing.setLead(resolveLead(data.getLeadId()));
     this.departmentRepository.saveAndFlush(existing);
 
     return existing;
+  }
+
+  private Employee resolveLead(Long leadId) {
+    if (leadId == null) {
+      return null;
+    }
+    return this.employeeRepository
+      .findById(leadId)
+      .orElseThrow(() ->
+        new NotFoundException("Could not find Employee with id = " + leadId)
+      );
   }
 }
