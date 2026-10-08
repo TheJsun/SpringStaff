@@ -1,0 +1,76 @@
+@use "../../scss/mixins/media" as q;
+@use "../../scss/mixins/responsive-column" as col;
+
+.departmentRow {
+  display: grid;
+  // Fallback deliberately has no auto track - see DepartmentList.module.scss.
+  grid-template-columns: var(--department-grid-columns, minmax(0, 1fr));
+  grid-auto-rows: min-content;
+  // min-height, not the fixed height EmployeeCard uses: a row in rename or
+  // confirm mode is taller than a row at rest.
+  min-height: var(--department-row-min-height, 64px);
+  width: 100%;
+  align-items: center;
+  gap: 0.5em 1em;
+  padding: 1em 1.5em;
+  color: rgb(50, 48, 48);
+  border-bottom: 1px solid #e7e8ef;
+}
+
+.name,
+.confirmText {
+  margin: 0;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.confirmText {
+  font-weight: 500;
+}
+
+.staff {
+  @include col.column-from-md(block);
+  margin: 0;
+  color: grey;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5em;
+  // Below sm the grid is a single column, so the buttons stack under the name
+  // and should start at its left edge rather than float off to the right.
+  justify-content: flex-start;
+
+  @include q.sm {
+    justify-content: flex-end;
+  }
+}
+
+.rowError {
+  // Full-width second grid row, so an error never shifts the columns.
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.8rem;
+  color: #d33636;
+}
+
+.field {
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border: 1px solid #d5d5d5;
+  border-radius: 8px;
+  background-color: #ffffff;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(4, 4, 6, 0.15);
+  }
+
+  &--invalid {
+    border-color: #d33636;
+  }
+}

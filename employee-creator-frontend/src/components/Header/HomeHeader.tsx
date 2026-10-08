@@ -4,14 +4,17 @@ import classes from "./HomeHeader.module.scss";
 interface HomeHeaderProps {
   title: string;
   action?: React.ReactNode;
-  numEmployees: number;
+  count: number;
+  // Pluralisation stays the caller's job, which keeps this component dumb.
+  countLabel?: string;
   isLoading: boolean;
 }
 
 export default function HomeHeader({
   title,
   action,
-  numEmployees,
+  count,
+  countLabel = "employees",
   isLoading,
 }: HomeHeaderProps) {
   return (
@@ -22,7 +25,9 @@ export default function HomeHeader({
           {isLoading ? (
             <Skeleton width="6em" height="1em" />
           ) : (
-            <p className={classes.employeeCount}>{numEmployees} employees</p>
+            <p className={classes.employeeCount}>
+              {count} {countLabel}
+            </p>
           )}
         </div>
         <div className={classes.action}>{action}</div>

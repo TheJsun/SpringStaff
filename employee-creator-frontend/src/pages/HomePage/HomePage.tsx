@@ -9,6 +9,7 @@ import Pagination from "../../components/Pagination/Pagination";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import { useFitRows } from "../../hooks/useFitRows";
 import { useEmployeeActions } from "../../hooks/useEmployeeActions";
+import { useIsAdmin } from "../../hooks/useIsAdmin";
 import {
   formatContractType,
   formatEmploymentType,
@@ -48,6 +49,7 @@ const HomePage = () => {
   } = useDepartments();
 
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<EmployeeFilters>(EMPTY_FILTERS);
   const [sortBy, setSortBy] = useState("dateAdded");
@@ -130,11 +132,24 @@ const HomePage = () => {
       <HomeHeader
         title="Directory"
         action={
-          <Button variant="accent" onClick={() => navigate("/employees/new")}>
-            Add Employee
-          </Button>
+          isAdmin ? (
+            <>
+              <Button
+                variant="secondary"
+                onClick={() => navigate("/departments")}
+              >
+                Manage Departments
+              </Button>
+              <Button
+                variant="accent"
+                onClick={() => navigate("/employees/new")}
+              >
+                Add Employee
+              </Button>
+            </>
+          ) : undefined
         }
-        numEmployees={employees.length}
+        count={employees.length}
         isLoading={employeesIsLoading}
       />
       <section className={classes.content}>

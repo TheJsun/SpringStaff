@@ -6,6 +6,7 @@ import { Skeleton } from "../Skeleton/Skeleton";
 import classes from "./EmployeeDetailsHeader.module.scss";
 import btnClasses from "../Button/Button.module.scss";
 import type { EmployeeResponse } from "../../schemas/employee-schema";
+import { useIsAdmin } from "../../hooks/useIsAdmin";
 import {
   formatContractType,
   formatEmploymentType,
@@ -25,6 +26,7 @@ export default function EmployeeDetailsHeader({
   onDelete,
   isLoading,
 }: EmployeeDetailsHeaderProps) {
+  const isAdmin = useIsAdmin();
   const fullName = employee ? getFullName(employee) : "";
   const subtitle = employee
     ? [
@@ -62,14 +64,17 @@ export default function EmployeeDetailsHeader({
             </div>
           </div>
           <div className={classes.actions}>
-            <Button
-              variant="accent"
-              className={classes.actionButton}
-              disabled={isLoading || !employee}
-              onClick={() => employee && onEdit(employee)}
-            >
-              Edit profile
-            </Button>
+            {isAdmin && (
+              <Button
+                variant="accent"
+                className={classes.actionButton}
+                disabled={isLoading || !employee}
+                onClick={() => employee && onEdit(employee)}
+              >
+                Edit profile
+              </Button>
+            )}
+            {/* Email stays unconditional - it's a mailto:, not an API action. */}
             <a
               href={employee ? `mailto:${employee.email}` : undefined}
               aria-disabled={isLoading || !employee}
@@ -77,13 +82,15 @@ export default function EmployeeDetailsHeader({
             >
               Email
             </a>
-            <MenuDropdown
-              employee={employee}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              variant="dark"
-              disabled={isLoading || !employee}
-            />
+            {isAdmin && (
+              <MenuDropdown
+                employee={employee}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                variant="dark"
+                disabled={isLoading || !employee}
+              />
+            )}
           </div>
         </div>
       </div>

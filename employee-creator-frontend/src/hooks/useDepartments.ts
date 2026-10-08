@@ -40,6 +40,9 @@ export function useDeleteDepartment() {
   return useMutation({
     mutationFn: deleteDepartment,
     onSuccess: () => {
+      // Deliberately does not invalidate ["employees"] like the update does: a
+      // successful DELETE proves no employee referenced this department, or the
+      // backend would have thrown DepartmentInUseException (409) instead.
       queryClient.invalidateQueries({ queryKey: ["departments"] });
     },
   });
@@ -53,6 +56,12 @@ export function useUpdateDepartment() {
       updateDepartment(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
+      // EmployeeResponse embeds a copy of { department: { id, name } }, so a
+      // rename leaves every cached employee holding the old name. HomePage
+      // filters employees by department *name* while building its filter
+      // options from the fresh department list, so without this the renamed
+      // department matches nothing. The prefix also covers ["employees", id].
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
     },
   });
 }

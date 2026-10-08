@@ -1,0 +1,31 @@
+// Layout mirrors HomePage so the white card sits at the same vertical offset
+// under the dark header. Note the deliberate omission of HomePage's
+// `@include q.md { overflow: hidden }` block: that exists for its fit-rows /
+// pagination viewport lock, and here it would clip a row in editing mode.
+.departmentsPage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+}
+
+.content {
+  padding: 1em 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  width: 100%;
+  flex: 1;
+}
+
+.contentInner {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: -70px;
+  background-color: #ffffff;
+  border: 1px solid #e7e8ef;
+  border-radius: 10px;
+  overflow: hidden;
+}
