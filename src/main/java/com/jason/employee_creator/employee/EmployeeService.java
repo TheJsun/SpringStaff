@@ -86,8 +86,6 @@ public class EmployeeService {
       throw new DuplicateFieldException("email", data.getEmail());
     }
 
-    // users.email is unique, so check it up front - otherwise the insert below
-    // fails with a constraint violation and surfaces as a 500 instead of a 409.
     String loginEmail = Emails.normalise(data.getEmail());
     if (this.userRepository.existsByEmail(loginEmail)) {
       log.warn("Create employee failed - duplicate login email={}", loginEmail);
@@ -105,8 +103,6 @@ public class EmployeeService {
       createdEmployee.getEmail()
     );
 
-    // The plaintext is returned to the caller to show the admin once and is never
-    // stored or logged - only the hash goes to the database.
     String temporaryPassword = generateTemporaryPassword();
     User createdUser = new User(
       loginEmail,
