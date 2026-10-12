@@ -87,11 +87,11 @@ public class GlobalExceptionHandler {
   ) {
     log.warn("Upload too large on {}: {}", req.getRequestURI(), ex.getMessage());
     ApiErrorResponse response = ApiErrorResponse.of(
-      HttpStatus.PAYLOAD_TOO_LARGE,
+      HttpStatus.CONTENT_TOO_LARGE,
       "File exceeds the maximum size of 10 MB",
       req.getRequestURI()
     );
-    return new ResponseEntity<>(response, HttpStatus.PAYLOAD_TOO_LARGE);
+    return new ResponseEntity<>(response, HttpStatus.CONTENT_TOO_LARGE);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
