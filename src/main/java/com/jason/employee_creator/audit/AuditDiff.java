@@ -1,5 +1,6 @@
 package com.jason.employee_creator.audit;
 
+import com.jason.employee_creator.audit.dtos.FieldChange;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -22,10 +23,13 @@ public final class AuditDiff {
         Modifier.isStatic(field.getModifiers()) ||
         field.isAnnotationPresent(NotAudited.class) ||
         field.isAnnotationPresent(Id.class) ||
+        //Checks if the field is a type of Collection
         Collection.class.isAssignableFrom(field.getType())
       ) {
         continue;
       }
+
+      // Entity's field is private, so we need to setAccessible to true
       field.setAccessible(true);
       try {
         Object value = field.get(entity);
