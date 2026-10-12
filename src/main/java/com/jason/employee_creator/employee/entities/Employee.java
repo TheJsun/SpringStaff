@@ -1,5 +1,6 @@
 package com.jason.employee_creator.employee.entities;
 
+import com.jason.employee_creator.audit.Auditable;
 import com.jason.employee_creator.department.entities.Department;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +22,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "employees")
-public class Employee {
+public class Employee implements Auditable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -233,5 +234,9 @@ public class Employee {
 
   public void setDepartment(Department department) {
     this.department = department;
+  }
+
+  public String auditLabel() {
+    return firstName + " " + lastName;
   }
 }

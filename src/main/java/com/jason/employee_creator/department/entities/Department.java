@@ -1,5 +1,6 @@
 package com.jason.employee_creator.department.entities;
 
+import com.jason.employee_creator.audit.Auditable;
 import com.jason.employee_creator.employee.entities.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-public class Department {
+public class Department implements Auditable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +26,6 @@ public class Department {
   @Column(length = 255)
   private String description;
 
-  // Optional. LAZY matches Employee.department; Spring Boot's Open-Session-In-View
-  // lets DepartmentResponse read it during serialization.
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "lead_id")
   private Employee lead;
@@ -67,5 +66,9 @@ public class Department {
 
   public void setLead(Employee lead) {
     this.lead = lead;
+  }
+
+  public String auditLabel() {
+    return name;
   }
 }

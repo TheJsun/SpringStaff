@@ -1,5 +1,6 @@
 package com.jason.employee_creator.user.entities;
 
+import com.jason.employee_creator.audit.Auditable;
 import com.jason.employee_creator.audit.NotAudited;
 import com.jason.employee_creator.employee.entities.Employee;
 import com.jason.employee_creator.user.Role;
@@ -16,7 +17,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Auditable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -84,5 +85,9 @@ public class User {
 
   public void setEmployee(Employee employee) {
     this.employee = employee;
+  }
+
+  public String auditLabel() {
+    return email;
   }
 }

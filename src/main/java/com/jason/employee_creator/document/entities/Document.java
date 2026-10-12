@@ -1,5 +1,6 @@
 package com.jason.employee_creator.document.entities;
 
+import com.jason.employee_creator.audit.Auditable;
 import com.jason.employee_creator.employee.entities.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "documents")
-public class Document {
+public class Document implements Auditable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,9 +34,6 @@ public class Document {
   @Column(nullable = false)
   private long sizeBytes;
 
-  // length forces the MySQL dialect to pick LONGBLOB rather than the default
-  // 64 KB BLOB; H2 treats it as a large BLOB too. The multipart layer caps
-  // uploads at 10 MB (see application.properties + DocumentService).
   @Lob
   @Column(nullable = false, length = 50 * 1024 * 1024)
   private byte[] data;
@@ -133,5 +131,9 @@ public class Document {
 
   public void setUploadedAt(LocalDateTime uploadedAt) {
     this.uploadedAt = uploadedAt;
+  }
+
+  public String auditLabel() {
+    return name;
   }
 }

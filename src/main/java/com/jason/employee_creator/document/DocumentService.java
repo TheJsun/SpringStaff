@@ -1,5 +1,6 @@
 package com.jason.employee_creator.document;
 
+import com.jason.employee_creator.audit.AuditService;
 import com.jason.employee_creator.common.exceptions.NotFoundException;
 import com.jason.employee_creator.common.exceptions.UnprocessableContentException;
 import com.jason.employee_creator.document.entities.Document;
@@ -21,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class DocumentService {
 
+  private final AuditService auditService;
+
   private static final long MAX_FILE_SIZE_BYTES = 10L * 1024 * 1024;
 
   private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
@@ -35,18 +38,20 @@ public class DocumentService {
 
   public DocumentService(
     DocumentRepository documentRepository,
-    EmployeeRepository employeeRepository
+    EmployeeRepository employeeRepository,
+    AuditService auditService
   ) {
     this.documentRepository = documentRepository;
     this.employeeRepository = employeeRepository;
+    this.auditService = auditService;
   }
 
   @PreAuthorize("hasRole('ADMIN') or #employeeId == principal.employeeId")
   public List<DocumentSummary> list(Long employeeId) {
     requireEmployee(employeeId);
     return this.documentRepository.findByEmployeeIdOrderByUploadedAtAsc(
-        employeeId
-      );
+      employeeId
+    );
   }
 
   @PreAuthorize("hasRole('ADMIN') or #employeeId == principal.employeeId")
@@ -84,6 +89,7 @@ public class DocumentService {
     document.setUploadedAt(LocalDateTime.now());
 
     this.documentRepository.saveAndFlush(document);
+    auditService.recordCreated(document);
     log.info(
       "Uploaded document id={} for employee id={} by user id={}",
       document.getId(),
@@ -101,6 +107,7 @@ public class DocumentService {
   @PreAuthorize("hasRole('ADMIN') or #employeeId == principal.employeeId")
   public void delete(Long employeeId, Long documentId) {
     Document document = findOwnedDocument(employeeId, documentId);
+    auditService.recordDeleted(document);
     this.documentRepository.delete(document);
     log.info(
       "Deleted document id={} for employee id={}",
@@ -113,9 +120,7 @@ public class DocumentService {
     Document document = this.documentRepository
       .findById(documentId)
       .orElseThrow(() ->
-        new NotFoundException(
-          "Could not find Document with id = " + documentId
-        )
+        new NotFoundException("Could not find Document with id = " + documentId)
       );
     if (!document.getEmployee().getId().equals(employeeId)) {
       throw new NotFoundException(
@@ -138,7 +143,9 @@ public class DocumentService {
       return file.getBytes();
     } catch (IOException ex) {
       log.warn("Failed to read uploaded file bytes: {}", ex.getMessage());
-      throw new UnprocessableContentException("Could not read the uploaded file");
+      throw new UnprocessableContentException(
+        "Could not read the uploaded file"
+      );
     }
   }
 

@@ -1,5 +1,6 @@
 package com.jason.employee_creator.audit;
 
+import com.jason.employee_creator.audit.dtos.FieldChange;
 import com.jason.employee_creator.audit.entities.AuditLog;
 import com.jason.employee_creator.user.CurrentUser;
 import jakarta.transaction.Transactional;
@@ -76,5 +77,7 @@ public class AuditService {
       .stream()
       .map(e -> new FieldChange(e.getKey(), e.getValue(), null))
       .toList();
+
+    record(AuditAction.DELETED, entity, changes);
   }
 }

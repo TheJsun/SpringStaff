@@ -1,5 +1,7 @@
 package com.jason.employee_creator.department;
 
+import com.jason.employee_creator.audit.AuditDiff;
+import com.jason.employee_creator.audit.AuditService;
 import com.jason.employee_creator.common.exceptions.DepartmentInUseException;
 import com.jason.employee_creator.common.exceptions.DuplicateFieldException;
 import com.jason.employee_creator.common.exceptions.NotFoundException;
@@ -9,6 +11,7 @@ import com.jason.employee_creator.department.entities.Department;
 import com.jason.employee_creator.employee.EmployeeRepository;
 import com.jason.employee_creator.employee.entities.Employee;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class DepartmentService {
 
+  private final AuditService auditService;
   private final DepartmentRepository departmentRepository;
   private final EmployeeRepository employeeRepository;
   private final ModelMapper mapper;
@@ -25,11 +29,13 @@ public class DepartmentService {
   public DepartmentService(
     DepartmentRepository departmentRepository,
     EmployeeRepository employeeRepository,
-    ModelMapper mapper
+    ModelMapper mapper,
+    AuditService auditService
   ) {
     this.departmentRepository = departmentRepository;
     this.employeeRepository = employeeRepository;
     this.mapper = mapper;
+    this.auditService = auditService;
   }
 
   public List<Department> findAll() {
@@ -56,6 +62,7 @@ public class DepartmentService {
     Department createdDepartment = this.mapper.map(data, Department.class);
     createdDepartment.setLead(resolveLead(data.getLeadId()));
     this.departmentRepository.saveAndFlush(createdDepartment);
+    auditService.recordCreated(createdDepartment);
     log.info(
       "Created department id={} name={}",
       createdDepartment.getId(),
@@ -71,7 +78,7 @@ public class DepartmentService {
     if (employeeRepository.existsByDepartmentId(id)) {
       throw new DepartmentInUseException(id);
     }
-
+    auditService.recordDeleted(target);
     this.departmentRepository.delete(target);
     log.info("Deleted department id={}", id);
   }
@@ -79,9 +86,11 @@ public class DepartmentService {
   @PreAuthorize("hasRole('ADMIN')")
   public Department update(Long id, UpdateDepartmentRequest data) {
     Department existing = this.findById(id);
+    Map<String, Object> before = AuditDiff.snapshot(existing);
 
     this.mapper.map(data, existing);
     existing.setLead(resolveLead(data.getLeadId()));
+    auditService.recordUpdated(before, existing);
     this.departmentRepository.saveAndFlush(existing);
 
     return existing;

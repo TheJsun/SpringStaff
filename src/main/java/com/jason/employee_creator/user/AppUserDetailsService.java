@@ -1,5 +1,6 @@
 package com.jason.employee_creator.user;
 
+import com.jason.employee_creator.user.entities.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

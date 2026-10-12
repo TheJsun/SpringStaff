@@ -1,5 +1,7 @@
 package com.jason.employee_creator.employee;
 
+import com.jason.employee_creator.audit.AuditDiff;
+import com.jason.employee_creator.audit.AuditService;
 import com.jason.employee_creator.common.exceptions.DuplicateFieldException;
 import com.jason.employee_creator.common.exceptions.NotFoundException;
 import com.jason.employee_creator.common.exceptions.UnprocessableContentException;
@@ -12,11 +14,12 @@ import com.jason.employee_creator.employee.entities.Employee;
 import com.jason.employee_creator.user.CurrentUser;
 import com.jason.employee_creator.user.Emails;
 import com.jason.employee_creator.user.Role;
-import com.jason.employee_creator.user.User;
 import com.jason.employee_creator.user.UserRepository;
+import com.jason.employee_creator.user.entities.User;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -31,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class EmployeeService {
 
+  private final AuditService auditService;
   private final EmployeeRepository repo;
   private final ModelMapper mapper;
   private final DepartmentRepository departmentRepository;
@@ -43,13 +47,15 @@ public class EmployeeService {
     ModelMapper mapper,
     DepartmentRepository departmentRepository,
     UserRepository userRepository,
-    PasswordEncoder passwordEncoder
+    PasswordEncoder passwordEncoder,
+    AuditService auditService
   ) {
     this.repo = repo;
     this.mapper = mapper;
     this.departmentRepository = departmentRepository;
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
+    this.auditService = auditService;
   }
 
   public List<Employee> findAll() {
@@ -97,6 +103,8 @@ public class EmployeeService {
     Department foundDepartment = resolveDepartment(data.getDepartmentId());
     createdEmployee.setDepartment(foundDepartment);
     this.repo.saveAndFlush(createdEmployee);
+    auditService.recordCreated(createdEmployee);
+
     log.info(
       "Created employee id={} email={}",
       createdEmployee.getId(),
@@ -112,6 +120,7 @@ public class EmployeeService {
     );
 
     userRepository.saveAndFlush(createdUser);
+    auditService.recordCreated(createdUser);
     log.info(
       "Created login account id={} email={} for employee id={}",
       createdUser.getId(),
@@ -143,6 +152,7 @@ public class EmployeeService {
     Optional<User> linkedUser = this.userRepository.findByEmployeeId(id);
     if (linkedUser.isPresent()) {
       User user = linkedUser.get();
+      auditService.recordDeleted(user);
 
       this.userRepository.delete(user);
       log.info(
@@ -152,6 +162,7 @@ public class EmployeeService {
       );
     }
 
+    auditService.recordDeleted(target);
     this.repo.delete(target);
     log.info("Deleted employee id={}", id);
   }
@@ -159,6 +170,7 @@ public class EmployeeService {
   @PreAuthorize("hasRole('ADMIN')")
   public Employee update(Long id, UpdateEmployeeRequest data) {
     Employee existing = findById(id);
+    Map<String, Object> before = AuditDiff.snapshot(existing);
     if (
       data.getEmail() != null && repo.existsByEmailAndIdNot(data.getEmail(), id)
     ) {
@@ -170,6 +182,7 @@ public class EmployeeService {
       existing.setDepartment(foundDepartment);
     }
     log.info("Updated employee with id={} with new data", existing.getId());
+    auditService.recordUpdated(before, existing);
     return repo.saveAndFlush(existing);
   }
 

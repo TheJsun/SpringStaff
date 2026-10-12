@@ -1,5 +1,6 @@
 package com.jason.employee_creator.user;
 
+import com.jason.employee_creator.user.entities.User;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
