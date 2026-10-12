@@ -41,6 +41,8 @@ public class AuditLog {
 
   private Instant createdAt = Instant.now();
 
+  protected AuditLog() {}
+
   public AuditLog(
     Long actorId,
     String actorEmail,
