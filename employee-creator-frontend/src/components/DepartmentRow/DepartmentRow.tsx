@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { EmployeeAvatar } from "../EmployeeAvatar/EmployeeAvatar";
 import { Skeleton } from "../Skeleton/Skeleton";
 import { useDeleteDepartment } from "../../hooks/useDepartments";
@@ -22,19 +23,50 @@ export default function DepartmentRow({
   onEdit,
 }: DepartmentRowProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(
+    null,
+  );
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const deleteMutation = useDeleteDepartment();
 
+  function openMenu() {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setMenuPos({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setIsMenuOpen(true);
+  }
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
+      const target = event.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        dropdownRef.current?.contains(target)
+      ) {
+        return;
       }
+      setIsMenuOpen(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const close = () => setIsMenuOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [isMenuOpen]);
 
   const rawDeleteError = deleteMutation.error?.message;
   const isInUse = rawDeleteError?.includes("still in use") ?? false;
@@ -83,49 +115,54 @@ export default function DepartmentRow({
       </p>
 
       {isAdmin && (
-        <div
-          className={`${classes.actions} ${menuClasses.menuContainer}`}
-          ref={menuRef}
-        >
+        <div className={`${classes.actions} ${menuClasses.menuContainer}`}>
           <button
             type="button"
+            ref={triggerRef}
             className={menuClasses.menuTrigger}
-            onClick={() => setIsMenuOpen((open) => !open)}
+            onClick={() => (isMenuOpen ? setIsMenuOpen(false) : openMenu())}
             aria-label={`Actions for ${department.name}`}
             aria-expanded={isMenuOpen}
           >
             ⋮
           </button>
-          {isMenuOpen && (
-            <div className={menuClasses.menuDropdown}>
-              <button
-                type="button"
-                className={menuClasses.menuItem}
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  onEdit(department);
-                }}
+          {isMenuOpen &&
+            menuPos &&
+            createPortal(
+              <div
+                className={menuClasses.menuDropdown}
+                ref={dropdownRef}
+                style={{ top: menuPos.top, right: menuPos.right }}
               >
-                Edit
-              </button>
-              <button
-                type="button"
-                className={menuClasses.menuItem}
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  deleteMutation.mutate(department.id);
-                }}
-                disabled={deleteMutation.isPending}
-                title={
-                  staffCount > 0
-                    ? "Departments with staff can't be deleted until they're reassigned"
-                    : undefined
-                }
-              >
-                {deleteMutation.isPending ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          )}
+                <button
+                  type="button"
+                  className={menuClasses.menuItem}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onEdit(department);
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  className={menuClasses.menuItem}
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    deleteMutation.mutate(department.id);
+                  }}
+                  disabled={deleteMutation.isPending}
+                  title={
+                    staffCount > 0
+                      ? "Departments with staff can't be deleted until they're reassigned"
+                      : undefined
+                  }
+                >
+                  {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                </button>
+              </div>,
+              document.body,
+            )}
         </div>
       )}
 

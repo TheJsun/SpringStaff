@@ -1,9 +1,3 @@
-// Layout mirrors HomePage so the white card sits at the same vertical offset
-// under the dark header, including the `@include q.md { overflow: hidden }`
-// viewport lock that pairs with the fit-rows page size (see DepartmentsPage.tsx)
-// to keep the list from scrolling and the pagination bar from overlapping it.
-// The edit form lives in a portaled Modal (rendered to document.body), so the
-// overflow lock never clips it.
 @use "../../scss/mixins/media" as q;
 
 .departmentsPage {

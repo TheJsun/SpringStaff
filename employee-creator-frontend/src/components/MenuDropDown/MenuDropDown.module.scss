@@ -29,16 +29,13 @@
 }
 
 .menuDropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 0.25rem;
+  position: fixed;
   background: #ffffff;
   border: 1px solid #eaeaea;
   border-radius: 8px;
   min-width: 100px;
   overflow: hidden;
-  z-index: 10;
+  z-index: 1000;
 }
 
 .menuItem {
