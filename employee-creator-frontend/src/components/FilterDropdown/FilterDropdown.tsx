@@ -4,13 +4,15 @@ import classes from "./FilterDropdown.module.scss";
 export interface FilterOption {
   value: string;
   label: string;
-  count: number;
+  // Optional: server-side filters (e.g. the audit log) can't cheaply supply
+  // per-option counts, so the count column is hidden when it's omitted.
+  count?: number;
 }
 
 interface FilterDropdownProps {
   label: string;
   allLabel: string;
-  allCount: number;
+  allCount?: number;
   options: FilterOption[];
   value: string;
   onChange: (value: string) => void;
@@ -94,7 +96,9 @@ export default function FilterDropdown({
               }}
             >
               <span>{option.label}</span>
-              <span className={classes.optionCount}>{option.count}</span>
+              {option.count !== undefined && (
+                <span className={classes.optionCount}>{option.count}</span>
+              )}
             </button>
           ))}
         </div>

@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import CreateEmployeePage from "./pages/CreateEmployeePage/CreateEmployeePage";
 import DepartmentsPage from "./pages/DepartmentsPage/DepartmentsPage";
+import AuditLogPage from "./pages/AuditLogPage/AuditLogPage";
 import { EmployeeDetailsPage } from "./pages/EmployeeDetailsPage/EmployeeDetailsPage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
 import { RequireAuth } from "./components/RequireAuth/RequireAuth";
@@ -25,6 +26,7 @@ function App() {
                 path="/employees/edit/:id"
                 element={<CreateEmployeePage />}
               />
+              <Route path="/audit-logs" element={<AuditLogPage />} />
             </Route>
           </Route>
         </Routes>

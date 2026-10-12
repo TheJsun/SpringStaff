@@ -1,0 +1,64 @@
+@use "../../scss/mixins/media" as q;
+@use "../../scss/mixins/responsive-column" as col;
+
+.auditListContainer {
+  // Visible columns change per breakpoint (actor/when collapse on small
+  // screens), so the column template is swapped to match, like DepartmentList.
+  --audit-grid-columns: auto minmax(0, 1fr) auto;
+  --audit-row-min-height: 72px;
+
+  @include q.sm {
+    --audit-grid-columns: auto minmax(0, 1fr) 9rem auto;
+  }
+
+  @include q.md {
+    --audit-grid-columns: auto minmax(0, 1.5fr) minmax(0, 1fr) 9rem auto;
+  }
+}
+
+.auditListHeader {
+  display: grid;
+  grid-template-columns: var(--audit-grid-columns, auto minmax(0, 1fr) auto);
+  gap: 0 1em;
+  padding: 1em 1.5em;
+  border-bottom: 1px solid #e7e8ef;
+  color: grey;
+  font-weight: 400;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  p {
+    margin: 0;
+  }
+}
+
+.actor {
+  @include col.column-from-md(block);
+}
+
+.when {
+  display: none;
+
+  @include q.sm {
+    display: block;
+  }
+}
+
+.auditList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.errorMessage,
+.emptyListMessage,
+.loadingMessage {
+  text-align: center;
+  margin-top: 2em;
+  height: 5vh;
+}
+
+.errorMessage {
+  color: red;
+}

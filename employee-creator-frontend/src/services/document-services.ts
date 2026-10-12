@@ -24,10 +24,12 @@ export function fileBadgeLabel(contentType: string, fileName: string): string {
   return (ext ?? "FILE").toUpperCase().slice(0, 4);
 }
 
-// "police-check-2026.pdf" -> "Police check 2026"
 export function defaultNameFromFileName(fileName: string): string {
   const withoutExtension = fileName.replace(/\.[^./\\]+$/, "");
-  const spaced = withoutExtension.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  const spaced = withoutExtension
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!spaced) return withoutExtension;
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }

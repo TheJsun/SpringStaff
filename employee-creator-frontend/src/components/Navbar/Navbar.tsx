@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useCurrentEmployee } from "../../hooks/useCurrentEmployee";
 import { useDropdownPanel } from "../../hooks/useDropdownPanel";
+import { useIsAdmin } from "../../hooks/useIsAdmin";
 import { EmployeeAvatar } from "../EmployeeAvatar/EmployeeAvatar";
 import { Skeleton } from "../Skeleton/Skeleton";
 import classes from "./Navbar.module.scss";
@@ -9,6 +10,7 @@ import classes from "./Navbar.module.scss";
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { data: employee, isLoading } = useCurrentEmployee();
+  const isAdmin = useIsAdmin();
   const navigate = useNavigate();
   const { isOpen, setIsOpen, containerRef, triggerRef, panelRef, panelStyle } =
     useDropdownPanel({ align: "right" });
@@ -62,6 +64,16 @@ export default function Navbar() {
           >
             Departments
           </NavLink>
+          {isAdmin && (
+            <NavLink
+              to="/audit-logs"
+              className={({ isActive }) =>
+                isActive ? `${classes.navLink} ${classes.navLinkActive}` : classes.navLink
+              }
+            >
+              Audit log
+            </NavLink>
+          )}
         </div>
       </div>
       <div className={classes.user}>

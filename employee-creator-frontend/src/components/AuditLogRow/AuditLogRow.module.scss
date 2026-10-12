@@ -1,0 +1,158 @@
+@use "../../scss/mixins/media" as q;
+@use "../../scss/mixins/responsive-column" as col;
+
+.auditRow {
+  width: 100%;
+  padding: 1em 1.5em;
+  color: rgb(50, 48, 48);
+  border-bottom: 1px solid #e7e8ef;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: var(--audit-grid-columns, minmax(0, 1fr) auto);
+  align-items: center;
+  gap: 0.5em 1em;
+}
+
+.badge {
+  justify-self: start;
+  padding: 0.2em 0.7em;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background-color: #eceef4;
+  color: #4a4a57;
+}
+
+.badgeCREATED {
+  background-color: #e3f6ec;
+  color: #1f7a4d;
+}
+
+.badgeUPDATED {
+  background-color: #e7f0fd;
+  color: #1f5fb0;
+}
+
+.badgeDELETED {
+  background-color: #fdeaea;
+  color: #c23636;
+}
+
+.entity {
+  min-width: 0;
+}
+
+.entityLabel {
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entityType {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.8rem;
+  color: #8a8a94;
+}
+
+.actor {
+  @include col.column-from-md(block);
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.when {
+  display: none;
+  margin: 0;
+  font-size: 0.85rem;
+  color: grey;
+  white-space: nowrap;
+
+  @include q.sm {
+    display: block;
+  }
+}
+
+.toggle {
+  justify-self: end;
+  padding: 0.4em 0.9em;
+  border: 1px solid #d5d5d5;
+  border-radius: 999px;
+  background-color: #ffffff;
+  font-size: 0.8rem;
+  color: #1a1a1a;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: #f5f5f5;
+  }
+
+  &:disabled {
+    border-color: transparent;
+    background-color: transparent;
+    color: #b5b5bd;
+    cursor: default;
+  }
+}
+
+.details {
+  margin-top: 0.85em;
+  padding: 0.75em 1em;
+  background-color: #f8f9fc;
+  border: 1px solid #e7e8ef;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+
+.change {
+  display: grid;
+  grid-template-columns: minmax(0, 10rem) minmax(0, 1fr);
+  gap: 0.5em 1em;
+  align-items: baseline;
+  font-size: 0.85rem;
+}
+
+.field {
+  font-weight: 600;
+  color: #4a4a57;
+  word-break: break-word;
+}
+
+.value {
+  min-width: 0;
+  word-break: break-word;
+}
+
+.diff {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4em;
+  min-width: 0;
+}
+
+.oldValue {
+  color: #c23636;
+  text-decoration: line-through;
+  word-break: break-word;
+}
+
+.arrow {
+  color: #8a8a94;
+}
+
+.newValue {
+  color: #1f7a4d;
+  word-break: break-word;
+}
