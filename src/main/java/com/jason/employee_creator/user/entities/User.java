@@ -1,6 +1,8 @@
-package com.jason.employee_creator.user;
+package com.jason.employee_creator.user.entities;
 
+import com.jason.employee_creator.audit.NotAudited;
 import com.jason.employee_creator.employee.entities.Employee;
+import com.jason.employee_creator.user.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -24,6 +26,7 @@ public class User {
   private String email;
 
   @Column(nullable = false)
+  @NotAudited
   private String password;
 
   @Enumerated(EnumType.STRING)

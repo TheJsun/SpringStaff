@@ -4,6 +4,7 @@ import com.jason.employee_creator.audit.entities.AuditLog;
 import com.jason.employee_creator.user.CurrentUser;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -49,5 +50,31 @@ public class AuditService {
 
   private String toJson(List<FieldChange> changes) {
     return objectMapper.writeValueAsString(changes);
+  }
+
+  public void recordCreated(Auditable entity) {
+    record(
+      AuditAction.CREATED,
+      entity,
+      AuditDiff.diff(Map.of(), AuditDiff.snapshot(entity))
+    );
+  }
+
+  public void recordUpdated(Map<String, Object> before, Auditable entity) {
+    List<FieldChange> changes = AuditDiff.diff(
+      before,
+      AuditDiff.snapshot(entity)
+    );
+    if (!changes.isEmpty()) {
+      record(AuditAction.UPDATED, entity, changes);
+    }
+  }
+
+  public void recordDeleted(Auditable entity) {
+    List<FieldChange> changes = AuditDiff.snapshot(entity)
+      .entrySet()
+      .stream()
+      .map(e -> new FieldChange(e.getKey(), e.getValue(), null))
+      .toList();
   }
 }
