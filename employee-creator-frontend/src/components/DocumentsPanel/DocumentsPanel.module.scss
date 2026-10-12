@@ -1,0 +1,84 @@
+@use "../../scss/mixins/media" as *;
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.75rem 1rem;
+  border: 1.5px dashed #c9ccd6;
+  border-radius: 12px;
+  background-color: #fafafb;
+  text-align: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dragging {
+  border-color: var(--accent-strong);
+  background-color: #f3effb;
+}
+
+.dropzoneText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dropzoneTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1a1a1f;
+}
+
+.browse {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent-strong);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.dropzoneHint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #9a9aa4;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.message {
+  text-align: center;
+  color: #6b6b74;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.listHeader {
+  display: none;
+
+  @include md {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1.5rem;
+    padding: 0 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #9a9aa4;
+  }
+}

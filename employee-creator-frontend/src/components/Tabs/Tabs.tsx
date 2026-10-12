@@ -9,9 +9,10 @@ interface Tab {
 interface TabsProps {
   tabs: Tab[];
   activeTabId: string;
+  onTabChange?: (id: string) => void;
 }
 
-export function Tabs({ tabs, activeTabId }: TabsProps) {
+export function Tabs({ tabs, activeTabId, onTabChange }: TabsProps) {
   return (
     <div className={classes.tabs} role="tablist">
       {tabs.map((tab) => (
@@ -21,6 +22,7 @@ export function Tabs({ tabs, activeTabId }: TabsProps) {
           role="tab"
           aria-selected={tab.id === activeTabId}
           disabled={tab.disabled}
+          onClick={() => onTabChange?.(tab.id)}
           className={[
             classes.tab,
             tab.id === activeTabId ? classes.active : "",

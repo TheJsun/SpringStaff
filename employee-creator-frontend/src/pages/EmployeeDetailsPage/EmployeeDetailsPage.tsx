@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEmployee } from "../../hooks/useEmployees";
+import { useAuth } from "../../context/useAuth";
+import { useIsAdmin } from "../../hooks/useIsAdmin";
 import EmployeeDetailsHeader from "../../components/Header/EmployeeDetailsHeader";
 import classes from "./EmployeeDetailsPage.module.scss";
 import { useEmployeeActions } from "../../hooks/useEmployeeActions";
 import { DetailsSection } from "../../components/DetailsSection/DetailsSection";
 import { Tabs } from "../../components/Tabs/Tabs";
+import { DocumentsPanel } from "../../components/DocumentsPanel/DocumentsPanel";
 import {
   formatContractType,
   formatEmploymentType,
@@ -18,6 +22,14 @@ export function EmployeeDetailsPage() {
   const { data: employee, isLoading, isError } = useEmployee(employeeId!);
   const { handleDelete, handleEdit, isDeleting, isDeleteError } =
     useEmployeeActions();
+
+  const { user } = useAuth();
+  const isAdmin = useIsAdmin();
+  const canSeeDocuments =
+    employeeId !== undefined &&
+    (isAdmin || user?.employeeId === employeeId);
+
+  const [activeTab, setActiveTab] = useState("details");
 
   const handleDeleteAndRedirect = (employeeId: number) => {
     handleDelete(employeeId, () => navigate("/"));
@@ -38,34 +50,26 @@ export function EmployeeDetailsPage() {
     { label: "Hours per week", value: "" },
   ];
 
-  const renderBody = () => {
-    if (isError) {
-      return <p className={classes.loadingMessage}>Could not load employee.</p>;
-    }
+  const tabs = [
+    { id: "details", label: "Details" },
+    { id: "documents", label: "Documents", disabled: !canSeeDocuments },
+  ];
 
+  const renderDetails = () => {
     if (!employee) {
       return (
-        <section className={classes.pageContainer}>
-          <section className={classes.detailsContainer}>
-            <Tabs
-              tabs={[
-                { id: "details", label: "Details" },
-                { id: "documents", label: "Documents", disabled: true },
-              ]}
-              activeTabId="details"
-            />
-            <DetailsSection
-              title="Contact"
-              fields={contactPlaceholderFields}
-              isLoading
-            />
-            <DetailsSection
-              title="Employment"
-              fields={employmentPlaceholderFields}
-              isLoading
-            />
-          </section>
-        </section>
+        <>
+          <DetailsSection
+            title="Contact"
+            fields={contactPlaceholderFields}
+            isLoading
+          />
+          <DetailsSection
+            title="Employment"
+            fields={employmentPlaceholderFields}
+            isLoading
+          />
+        </>
       );
     }
 
@@ -104,17 +108,33 @@ export function EmployeeDetailsPage() {
 
     return (
       <>
+        <DetailsSection title="Contact" fields={contactFields} />
+        <DetailsSection title="Employment" fields={employmentFields} />
+      </>
+    );
+  };
+
+  const renderBody = () => {
+    if (isError) {
+      return <p className={classes.loadingMessage}>Could not load employee.</p>;
+    }
+
+    const showDocuments = activeTab === "documents" && canSeeDocuments;
+
+    return (
+      <>
         <section className={classes.pageContainer}>
           <section className={classes.detailsContainer}>
             <Tabs
-              tabs={[
-                { id: "details", label: "Details" },
-                { id: "documents", label: "Documents", disabled: true },
-              ]}
-              activeTabId="details"
+              tabs={tabs}
+              activeTabId={activeTab}
+              onTabChange={setActiveTab}
             />
-            <DetailsSection title="Contact" fields={contactFields} />
-            <DetailsSection title="Employment" fields={employmentFields} />
+            {showDocuments ? (
+              <DocumentsPanel employeeId={employeeId!} />
+            ) : (
+              renderDetails()
+            )}
           </section>
         </section>
 

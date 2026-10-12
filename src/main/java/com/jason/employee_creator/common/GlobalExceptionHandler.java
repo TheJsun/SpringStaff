@@ -18,6 +18,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @ControllerAdvice
 @Slf4j
@@ -77,6 +78,20 @@ public class GlobalExceptionHandler {
       req.getRequestURI()
     );
     return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<ApiErrorResponse> handleMaxUploadSizeExceededException(
+    MaxUploadSizeExceededException ex,
+    HttpServletRequest req
+  ) {
+    log.warn("Upload too large on {}: {}", req.getRequestURI(), ex.getMessage());
+    ApiErrorResponse response = ApiErrorResponse.of(
+      HttpStatus.PAYLOAD_TOO_LARGE,
+      "File exceeds the maximum size of 10 MB",
+      req.getRequestURI()
+    );
+    return new ResponseEntity<>(response, HttpStatus.PAYLOAD_TOO_LARGE);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
