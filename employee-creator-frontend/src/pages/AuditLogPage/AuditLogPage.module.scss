@@ -1,0 +1,93 @@
+@use "../../scss/mixins/media" as q;
+
+.auditPage {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+}
+
+.content {
+  padding: 1em 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  width: 100%;
+  flex: 1;
+}
+
+.contentInner {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: -70px;
+  background-color: #ffffff;
+  border: 1px solid #e7e8ef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+@include q.md {
+  .auditPage {
+    overflow: hidden;
+  }
+
+  .content {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 1em 1.5em;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.divider {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin: 0 0.25em;
+  background-color: #e7e8ef;
+}
+
+.allButton {
+  flex: none;
+  padding: 0.5em 1.1em;
+  border: 1px solid #d5d5d5;
+  border-radius: 999px;
+  background-color: #ffffff;
+  font-size: 0.9rem;
+  color: #1a1a1a;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background-color: #f5f5f5;
+  }
+}
+
+.allButtonActive {
+  background-color: var(--bg-primary);
+  border-color: transparent;
+  color: var(--text-white);
+  opacity: 1;
+  cursor: default;
+}
