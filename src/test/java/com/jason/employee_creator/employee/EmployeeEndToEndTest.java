@@ -13,7 +13,7 @@ import com.jason.employee_creator.employee.entities.Employee;
 import com.jason.employee_creator.employee.entities.EmploymentType;
 import com.jason.employee_creator.support.ApiIntegrationTest;
 import com.jason.employee_creator.user.Role;
-import com.jason.employee_creator.user.User;
+import com.jason.employee_creator.user.entities.User;
 import io.restassured.http.ContentType;
 import java.time.LocalDate;
 import java.util.Map;
@@ -146,7 +146,10 @@ public class EmployeeEndToEndTest extends ApiIntegrationTest {
       .body("employee.middleName", equalTo("validMiddleName"))
       .body("employee.email", equalTo("validEmail@gmail.com"))
       .body("employee.phoneNumber", equalTo("0412345678"))
-      .body("employee.address", equalTo("123 Example Street, Melbourne VIC 3000"))
+      .body(
+        "employee.address",
+        equalTo("123 Example Street, Melbourne VIC 3000")
+      )
       .body("employee.jobRole", equalTo("Software Engineer"))
       .body("employee.department.name", equalTo("Engineering"))
       .body("employee.contractType", equalTo("CONTRACT"))
@@ -156,7 +159,9 @@ public class EmployeeEndToEndTest extends ApiIntegrationTest {
       .body("employee.employmentType", equalTo("PART_TIME"))
       .body("employee.hoursPerWeek", equalTo(30))
       .body("temporaryPassword", not(emptyOrNullString()))
-      .body(matchesJsonSchemaInClasspath("schemas/create-employee-schema.json"));
+      .body(
+        matchesJsonSchemaInClasspath("schemas/create-employee-schema.json")
+      );
   }
 
   @Test
@@ -177,7 +182,10 @@ public class EmployeeEndToEndTest extends ApiIntegrationTest {
       .extract()
       .path("temporaryPassword");
 
-    assertNotNull(temporaryPassword, "create should return a temporary password");
+    assertNotNull(
+      temporaryPassword,
+      "create should return a temporary password"
+    );
 
     given()
       .contentType(ContentType.JSON)

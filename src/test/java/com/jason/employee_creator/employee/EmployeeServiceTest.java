@@ -1,8 +1,8 @@
 package com.jason.employee_creator.employee;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -19,8 +19,8 @@ import com.jason.employee_creator.employee.dtos.CreateEmployeeRequest;
 import com.jason.employee_creator.employee.dtos.CreateEmployeeResult;
 import com.jason.employee_creator.employee.entities.Employee;
 import com.jason.employee_creator.user.Role;
-import com.jason.employee_creator.user.User;
 import com.jason.employee_creator.user.UserRepository;
+import com.jason.employee_creator.user.entities.User;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -175,7 +175,10 @@ public class EmployeeServiceTest {
 
     ArgumentCaptor<User> savedUser = ArgumentCaptor.forClass(User.class);
     verify(this.userRepository).saveAndFlush(savedUser.capture());
-    assertEquals("hashed-temporary-password", savedUser.getValue().getPassword());
+    assertEquals(
+      "hashed-temporary-password",
+      savedUser.getValue().getPassword()
+    );
     assertEquals("testemail@gmail.com", savedUser.getValue().getEmail());
     assertEquals(Role.EMPLOYEE, savedUser.getValue().getRole());
   }
