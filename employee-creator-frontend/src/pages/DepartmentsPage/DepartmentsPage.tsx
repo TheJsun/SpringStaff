@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Button from "../../components/Button/Button";
 import HomeHeader from "../../components/Header/HomeHeader";
 import DepartmentList from "../../components/DepartmentList/DepartmentList";
@@ -7,12 +7,11 @@ import Modal from "../../components/Modal/Modal";
 import Pagination from "../../components/Pagination/Pagination";
 import { useDepartments } from "../../hooks/useDepartments";
 import { useEmployees } from "../../hooks/useEmployees";
+import { useFitRows } from "../../hooks/useFitRows";
 import { useIsAdmin } from "../../hooks/useIsAdmin";
 import { countStaffByDepartment } from "../../services/department-services";
 import type { DepartmentResponse } from "../../schemas/department-schema";
 import classes from "./DepartmentsPage.module.scss";
-
-const PAGE_SIZE = 10;
 
 type ModalState =
   | { mode: "create" }
@@ -33,19 +32,25 @@ const DepartmentsPage = () => {
   const [modal, setModal] = useState<ModalState>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const listBodyRef = useRef<HTMLDivElement>(null);
+  const paginationRef = useRef<HTMLDivElement>(null);
+  const pageSize = useFitRows({
+    bodyRef: listBodyRef,
+    footerRef: paginationRef,
+    minRows: 3,
+    rowHeightVar: "--department-row-min-height",
+  });
+
   const staffCounts = countStaffByDepartment(employees);
 
-  const totalPages = Math.max(1, Math.ceil(departments.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(departments.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
-  const startIndex = (safePage - 1) * PAGE_SIZE;
-  const pageOfDepartments = departments.slice(
-    startIndex,
-    startIndex + PAGE_SIZE,
-  );
+  const startIndex = (safePage - 1) * pageSize;
+  const pageOfDepartments = departments.slice(startIndex, startIndex + pageSize);
 
   const handleSaved = () => {
     if (modal?.mode === "create") {
-      setCurrentPage(Math.ceil((departments.length + 1) / PAGE_SIZE));
+      setCurrentPage(Math.ceil((departments.length + 1) / pageSize));
     }
     setModal(null);
   };
@@ -80,17 +85,17 @@ const DepartmentsPage = () => {
             error={error}
             isAdmin={isAdmin}
             onEdit={(department) => setModal({ mode: "edit", department })}
+            listBodyRef={listBodyRef}
           />
         </div>
       </section>
-      {departments.length > PAGE_SIZE && (
-        <Pagination
-          currentPage={safePage}
-          totalItems={departments.length}
-          pageSize={PAGE_SIZE}
-          onPageChange={setCurrentPage}
-        />
-      )}
+      <Pagination
+        currentPage={safePage}
+        totalItems={departments.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        containerRef={paginationRef}
+      />
 
       {modal && (
         <Modal

@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import type { DepartmentResponse } from "../../schemas/department-schema";
 import DepartmentRow from "../DepartmentRow/DepartmentRow";
 import classes from "./DepartmentList.module.scss";
@@ -12,6 +13,7 @@ interface DepartmentListProps {
   error: Error | null;
   isAdmin: boolean;
   onEdit: (department: DepartmentResponse) => void;
+  listBodyRef?: Ref<HTMLDivElement>;
 }
 
 export default function DepartmentList({
@@ -24,6 +26,7 @@ export default function DepartmentList({
   error,
   isAdmin,
   onEdit,
+  listBodyRef,
 }: DepartmentListProps) {
   return (
     <section className={classes.departmentListContainer}>
@@ -33,7 +36,7 @@ export default function DepartmentList({
         <p className={classes.people}>People</p>
         <p></p>
       </header>
-      <div className={classes.departmentList}>
+      <div className={classes.departmentList} ref={listBodyRef}>
         {isLoading && (
           <p className={classes.loadingMessage}>Loading departments...</p>
         )}
