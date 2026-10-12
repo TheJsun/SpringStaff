@@ -1,9 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import CreateEmployeePage from "./pages/CreateEmployeePage/CreateEmployeePage";
+import DepartmentsPage from "./pages/DepartmentsPage/DepartmentsPage";
 import { EmployeeDetailsPage } from "./pages/EmployeeDetailsPage/EmployeeDetailsPage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
 import { RequireAuth } from "./components/RequireAuth/RequireAuth";
+import { RequireAdmin } from "./components/RequireAdmin/RequireAdmin";
 
 function App() {
   return (
@@ -14,9 +16,16 @@ function App() {
 
           <Route element={<RequireAuth />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/employees/new" element={<CreateEmployeePage />} />
-            <Route path="/employees/edit/:id" element={<CreateEmployeePage />} />
             <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
+            <Route path="/departments" element={<DepartmentsPage />} />
+
+            <Route element={<RequireAdmin />}>
+              <Route path="/employees/new" element={<CreateEmployeePage />} />
+              <Route
+                path="/employees/edit/:id"
+                element={<CreateEmployeePage />}
+              />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

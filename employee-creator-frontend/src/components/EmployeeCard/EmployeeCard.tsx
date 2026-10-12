@@ -3,6 +3,7 @@ import classes from "./EmployeeCard.module.scss";
 import { EmployeeAvatar } from "../EmployeeAvatar/EmployeeAvatar";
 import { MenuDropdown } from "../MenuDropDown/MenuDropDown";
 import { useNavigate } from "react-router-dom";
+import { useIsAdmin } from "../../hooks/useIsAdmin";
 import {
   formatContractType,
   formatEmploymentType,
@@ -22,6 +23,7 @@ export default function EmployeeCard({
   onEdit,
 }: EmployeeCardProps) {
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
 
   return (
     <article
@@ -46,7 +48,11 @@ export default function EmployeeCard({
         {formatContractType(employee.contractType)}
       </p>
       <p className={classes.started}>{formatStartDate(employee.startDate)}</p>
-      <MenuDropdown employee={employee} onDelete={onDelete} onEdit={onEdit} />
+      {/* The trailing grid track stays either way, so a non-admin row keeps the
+          same column alignment as the list header's placeholder cell. */}
+      {isAdmin && (
+        <MenuDropdown employee={employee} onDelete={onDelete} onEdit={onEdit} />
+      )}
     </article>
   );
 }

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useCurrentEmployee } from "../../hooks/useCurrentEmployee";
 import { useDropdownPanel } from "../../hooks/useDropdownPanel";
@@ -40,9 +40,30 @@ export default function Navbar() {
 
   return (
     <nav className={classes.navContainer}>
-      <Link to="/" className={classes.brand}>
-        SpringStaff
-      </Link>
+      <div className={classes.left}>
+        <Link to="/" className={classes.brand}>
+          SpringStaff
+        </Link>
+        <div className={classes.navLinks}>
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              isActive ? `${classes.navLink} ${classes.navLinkActive}` : classes.navLink
+            }
+          >
+            Directory
+          </NavLink>
+          <NavLink
+            to="/departments"
+            className={({ isActive }) =>
+              isActive ? `${classes.navLink} ${classes.navLinkActive}` : classes.navLink
+            }
+          >
+            Departments
+          </NavLink>
+        </div>
+      </div>
       <div className={classes.user}>
         {isLoading ? (
           <Skeleton width="8em" height="1em" variant="light" />

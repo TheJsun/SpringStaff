@@ -50,11 +50,10 @@
 }
 
 .accent {
-  background-color: #cbb8f1;
-  color: #393030;
+  background-color: #a9cdf7;
+  color: #000000;
 
   &:hover:not(:disabled) {
-    background-color: #a38fcb;
-    color: #5e4545;
+    background-color: #74aaeb;
   }
 }

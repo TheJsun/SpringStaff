@@ -1,0 +1,65 @@
+@use "../../scss/mixins/media" as q;
+@use "../../scss/mixins/responsive-column" as col;
+
+.departmentListContainer {
+  --department-actions-width: 2.5rem;
+  --department-grid-columns: minmax(0, 1fr) var(--department-actions-width);
+  --department-row-min-height: 72px;
+
+  @include q.sm {
+    --department-grid-columns: minmax(0, 1fr) 7rem
+      var(--department-actions-width);
+  }
+
+  @include q.md {
+    --department-grid-columns: minmax(0, 2fr) minmax(0, 1.4fr) 7rem
+      var(--department-actions-width);
+  }
+}
+
+.departmentListHeader {
+  display: grid;
+  grid-template-columns: var(--department-grid-columns, minmax(0, 1fr));
+  gap: 0 1em;
+  padding: 1em 1.5em;
+  border-bottom: 1px solid #e7e8ef;
+  color: grey;
+  font-weight: 400;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  p {
+    margin: 0;
+  }
+}
+
+.lead {
+  @include col.column-from-md(block);
+}
+
+.people {
+  display: none;
+
+  @include q.sm {
+    display: block;
+  }
+}
+
+.departmentList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.errorMessage,
+.emptyListMessage,
+.loadingMessage {
+  text-align: center;
+  margin-top: 2em;
+  height: 5vh;
+}
+
+.errorMessage {
+  color: red;
+}
