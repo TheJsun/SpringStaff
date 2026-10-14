@@ -1,0 +1,38 @@
+@use "../../scss/mixins/media" as q;
+
+.bottomNav {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0.5em;
+  width: 100%;
+  height: var(--bottom-nav-height);
+  padding: 0 0.75em;
+  background-color: white;
+  border-top: 0.01px solid rgb(223, 221, 221);
+
+  @include q.md {
+    display: none;
+  }
+}
+
+.link,
+.link:visited {
+  flex: 1;
+  text-align: center;
+  padding: 0.5em 0;
+  font-size: 1rem;
+  text-decoration: none;
+  color: rgb(86, 84, 84);
+  transition: color 0.15s ease;
+}
+
+.linkActive,
+.linkActive:visited {
+  font-weight: 600;
+  color: black;
+}

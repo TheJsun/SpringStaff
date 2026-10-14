@@ -18,6 +18,15 @@ function readRowHeight(el: HTMLElement, rowHeightVar: string): number {
   const px = Number.parseFloat(raw);
   return Number.isFinite(px) && px > 0 ? px : FALLBACK_ROW_HEIGHT;
 }
+
+// Height occupied by the mobile bottom nav, so a fitted list leaves room for it
+// instead of letting the pagination render over it. Resolves to 0 at md+, where
+// the nav is hidden. See --bottom-nav-height in scss/variables/_variables.scss.
+function readNavHeight(el: HTMLElement): number {
+  const raw = getComputedStyle(el).getPropertyValue("--bottom-nav-height").trim();
+  const px = Number.parseFloat(raw);
+  return Number.isFinite(px) && px > 0 ? px : 0;
+}
 export function useFitRows({
   bodyRef,
   footerRef,
@@ -33,7 +42,9 @@ export function useFitRows({
 
     const rowHeight = readRowHeight(body, rowHeightVar);
     const bodyTop = body.getBoundingClientRect().top + window.scrollY;
-    const reservedBelow = (footerRef?.current?.offsetHeight ?? 0) + gutter;
+    const navHeight = readNavHeight(body);
+    const reservedBelow =
+      (footerRef?.current?.offsetHeight ?? 0) + gutter + navHeight;
     const available = window.innerHeight - bodyTop - reservedBelow;
 
     setRows(Math.max(minRows, Math.floor(available / rowHeight)));

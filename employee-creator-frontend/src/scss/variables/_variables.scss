@@ -1,3 +1,4 @@
+@use "../mixins/media" as q;
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
 :root {
@@ -17,4 +18,13 @@
   // Shared width cap so the homepage header content and the employee list
   // below it grow together and stop expanding at the same point.
   --content-max-width: clamp(600px, 90vw, 1050px);
+
+  // Height reserved for the mobile bottom nav. 0 once the nav is hidden at md,
+  // so useFitRows stops reserving space for it on desktop. Single source of
+  // truth read by both BottomNav.module.scss and the useFitRows hook.
+  --bottom-nav-height: 64px;
+
+  @include q.md {
+    --bottom-nav-height: 0px;
+  }
 }
