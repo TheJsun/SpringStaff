@@ -4,6 +4,7 @@ import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
 import AuditLogList from "../../components/AuditLogList/AuditLogList";
 import Pagination from "../../components/Pagination/Pagination";
 import { useAuditActors, useAuditLogs } from "../../hooks/useAuditLogs";
+import { useFitRows } from "../../hooks/useFitRows";
 import {
   ACTION_OPTIONS,
   ENTITY_TYPE_OPTIONS,
@@ -11,21 +12,26 @@ import {
 import type { AuditAction } from "../../schemas/audit-schema";
 import classes from "./AuditLogPage.module.scss";
 
-const PAGE_SIZE = 20;
-
 const AuditLogPage = () => {
   const [entityType, setEntityType] = useState("");
   const [action, setAction] = useState<AuditAction | "">("");
   const [actorId, setActorId] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const listBodyRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
+  const pageSize = useFitRows({
+    bodyRef: listBodyRef,
+    footerRef: paginationRef,
+    minRows: 3,
+    rowHeightVar: "--audit-row-min-height",
+  });
 
   const { data: actors = [] } = useAuditActors();
 
   const { data, isLoading, isError, error } = useAuditLogs({
     page: currentPage - 1,
-    size: PAGE_SIZE,
+    size: pageSize,
     entityType: entityType || undefined,
     action: action || undefined,
     actorId: actorId ? Number(actorId) : null,
@@ -114,13 +120,14 @@ const AuditLogPage = () => {
             isLoading={isLoading}
             isError={isError}
             error={error}
+            listBodyRef={listBodyRef}
           />
         </div>
       </section>
       <Pagination
         currentPage={currentPage}
         totalItems={totalElements}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
         onPageChange={setCurrentPage}
         containerRef={paginationRef}
       />
