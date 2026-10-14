@@ -3,6 +3,7 @@ package com.jason.employee_creator.employee;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jason.employee_creator.audit.AuditService;
 import com.jason.employee_creator.common.exceptions.DuplicateFieldException;
 import com.jason.employee_creator.common.exceptions.NotFoundException;
 import com.jason.employee_creator.department.DepartmentRepository;
@@ -50,6 +52,9 @@ public class EmployeeServiceTest {
 
   @Mock
   private PasswordEncoder passwordEncoder;
+
+  @Mock
+  private AuditService auditService;
 
   @InjectMocks
   private EmployeeService employeeService;
@@ -214,6 +219,9 @@ public class EmployeeServiceTest {
     Employee employee = new Employee();
     when(this.repo.findById(anyLong())).thenReturn(Optional.of(employee));
     when(this.userRepository.findByEmployeeId(1L)).thenReturn(Optional.empty());
+    when(this.departmentRepository.findByLeadId(anyLong())).thenReturn(
+      List.of()
+    );
 
     this.employeeService.deleteById(1L);
     verify(this.repo).delete(employee);
@@ -236,12 +244,40 @@ public class EmployeeServiceTest {
     when(this.userRepository.findByEmployeeId(1L)).thenReturn(
       Optional.of(linkedUser)
     );
+    when(this.departmentRepository.findByLeadId(anyLong())).thenReturn(
+      List.of()
+    );
 
     this.employeeService.deleteById(1L);
 
     // The login account has to go first - users.employee_id is a foreign key.
     InOrder inOrder = inOrder(this.userRepository, this.repo);
     inOrder.verify(this.userRepository).delete(linkedUser);
+    inOrder.verify(this.repo).delete(employee);
+  }
+
+  @Test
+  public void deleteEmployee_employeeIsDepartmentLead_clearsLead() {
+    Employee employee = new Employee();
+    employee.setId(1L);
+
+    Department ledDepartment = new Department();
+    ledDepartment.setId(5L);
+    ledDepartment.setLead(employee);
+
+    when(this.repo.findById(anyLong())).thenReturn(Optional.of(employee));
+    when(this.userRepository.findByEmployeeId(1L)).thenReturn(Optional.empty());
+    when(this.departmentRepository.findByLeadId(1L)).thenReturn(
+      List.of(ledDepartment)
+    );
+
+    this.employeeService.deleteById(1L);
+
+    // The department lead must be cleared and saved before the employee row is
+    // deleted - departments.lead_id is a foreign key onto employees.
+    assertNull(ledDepartment.getLead());
+    InOrder inOrder = inOrder(this.departmentRepository, this.repo);
+    inOrder.verify(this.departmentRepository).saveAndFlush(ledDepartment);
     inOrder.verify(this.repo).delete(employee);
   }
 }

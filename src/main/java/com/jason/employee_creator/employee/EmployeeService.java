@@ -162,6 +162,19 @@ public class EmployeeService {
       );
     }
 
+    List<Department> ledDepartments = departmentRepository.findByLeadId(id);
+    for (Department department : ledDepartments) {
+      Map<String, Object> before = AuditDiff.snapshot(department);
+      department.setLead(null);
+      auditService.recordUpdated(before, department);
+      departmentRepository.saveAndFlush(department);
+      log.info(
+        "Cleared lead on department id={} after deleting lead employee id={}",
+        department.getId(),
+        id
+      );
+    }
+
     auditService.recordDeleted(target);
     this.repo.delete(target);
     log.info("Deleted employee id={}", id);
