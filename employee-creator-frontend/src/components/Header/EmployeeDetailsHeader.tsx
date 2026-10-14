@@ -86,7 +86,6 @@ export default function EmployeeDetailsHeader({
               <MenuDropdown
                 employee={employee}
                 onDelete={onDelete}
-                onEdit={onEdit}
                 variant="dark"
                 disabled={isLoading || !employee}
               />

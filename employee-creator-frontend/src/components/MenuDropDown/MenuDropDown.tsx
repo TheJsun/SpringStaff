@@ -5,7 +5,7 @@ import type { EmployeeResponse } from "../../schemas/employee-schema";
 interface MenuDropDownProps {
   employee?: EmployeeResponse;
   onDelete: (id: number) => void;
-  onEdit: (employee: EmployeeResponse) => void;
+  onEdit?: (employee: EmployeeResponse) => void;
   variant?: "light" | "dark";
   disabled?: boolean;
 }
@@ -48,15 +48,17 @@ export function MenuDropdown({
 
         {isMenuOpen && employee && (
           <div className={classes.menuDropdown}>
-            <button
-              className={classes.menuItem}
-              onClick={() => {
-                setIsMenuOpen(false);
-                onEdit(employee);
-              }}
-            >
-              Edit
-            </button>
+            {onEdit && (
+              <button
+                className={classes.menuItem}
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  onEdit(employee);
+                }}
+              >
+                Edit
+              </button>
+            )}
             <button
               className={classes.menuItem}
               onClick={() => {
