@@ -14,13 +14,10 @@
   }
 }
 
-// Decorative brand copy: a full-width banner on phones that the card overlaps,
-// and the left column of the split screen from md up.
 .brand {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  // The deep bottom padding is the room the card is pulled up into.
   padding: 3rem 1.5rem 4.5rem;
   background-color: var(--bg-primary);
   color: var(--text-white);
@@ -36,7 +33,6 @@
 }
 
 .headline {
-  // Narrow enough to break after "your", as the mobile design does.
   max-width: 16ch;
   margin: 0;
   font-size: 1.75rem;
@@ -65,7 +61,6 @@
 }
 
 .formSide {
-  // Paints over the banner where the card is pulled up across it.
   position: relative;
   display: flex;
   align-items: flex-start;
@@ -80,7 +75,6 @@
   }
 }
 
-// Holds the card and the footer line beneath it at a shared width.
 .panel {
   display: flex;
   flex-direction: column;
@@ -167,7 +161,6 @@
   position: relative;
   display: flex;
 
-  // Keep typed characters clear of the Show/Hide button.
   .field {
     padding-right: 3.75rem;
   }
@@ -201,12 +194,9 @@
   font-size: 0.85rem;
   color: #d33636;
   background-color: #fdf2f2;
-  border: 1px solid #f0b8b8;
   border-radius: 8px;
 }
 
-// Two classes deep so the width wins over Button's own .btn padding regardless
-// of the order the two modules are injected in.
 .form .submit {
   width: 100%;
   padding: 0.7rem 1rem;
