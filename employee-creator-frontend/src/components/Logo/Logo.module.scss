@@ -1,0 +1,62 @@
+@use "../../scss/variables/variables" as *;
+
+.logo {
+  --logo-mark-size: 24px;
+  --logo-word-size: 20px;
+  --logo-spring-size: 23px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+  user-select: none;
+}
+
+.mark {
+  flex: none;
+  width: var(--logo-mark-size);
+  height: var(--logo-mark-size);
+}
+
+.word {
+  display: inline-flex;
+  align-items: baseline;
+  color: inherit;
+}
+
+.wordSpring {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--logo-spring-size);
+}
+
+.wordStaff {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: var(--logo-word-size);
+}
+
+.light {
+  color: #ffffff;
+
+  .markMain {
+    fill: #ffffff;
+  }
+
+  .markAccent {
+    fill: #cfe2fa;
+  }
+}
+
+.dark {
+  color: #0f142e;
+
+  .markMain {
+    fill: #0f142e;
+  }
+
+  .markAccent {
+    fill: var(--accent);
+  }
+}

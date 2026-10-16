@@ -19,9 +19,6 @@ function readRowHeight(el: HTMLElement, rowHeightVar: string): number {
   return Number.isFinite(px) && px > 0 ? px : FALLBACK_ROW_HEIGHT;
 }
 
-// Height occupied by the mobile bottom nav, so a fitted list leaves room for it
-// instead of letting the pagination render over it. Resolves to 0 at md+, where
-// the nav is hidden. See --bottom-nav-height in scss/variables/_variables.scss.
 function readNavHeight(el: HTMLElement): number {
   const raw = getComputedStyle(el).getPropertyValue("--bottom-nav-height").trim();
   const px = Number.parseFloat(raw);

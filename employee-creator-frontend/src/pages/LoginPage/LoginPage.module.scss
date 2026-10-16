@@ -2,216 +2,342 @@
 @use "../../scss/variables/variables" as *;
 @use "../../scss/mixins/media" as q;
 
+$navy: #0f142e;
+
 .page {
-  display: flex;
-  flex-direction: column;
   min-height: 100dvh;
-  background-color: var(--bg-page);
+  background-color: #e6e6e9;
+}
 
-  @include q.md {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+// Transparent wrapper on mobile; the full-bleed split on desktop (10a).
+.card {
+  @include q.lg {
+    display: flex;
+    width: 100%;
+    min-height: 100dvh;
+    overflow: hidden;
   }
 }
 
-.brand {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 3rem 1.5rem 4.5rem;
-  background-color: var(--bg-primary);
-  color: var(--text-white);
+// ---- Art panel (desktop) / banner (mobile) ----
+.art {
+  position: relative;
+  overflow: hidden;
+  height: 320px;
+  background-color: $navy;
 
-  @include q.md {
-    justify-content: center;
-    padding: 3rem;
-  }
-
-  @include q.xl {
-    padding: 4rem;
+  @include q.lg {
+    flex: 1 1 50%;
+    min-width: 0;
+    height: auto;
   }
 }
 
-.headline {
-  max-width: 16ch;
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-
-  @include q.md {
-    max-width: 14ch;
-    font-size: clamp(2rem, 3.6vw, 3rem);
-    line-height: 1.05;
-  }
-}
-
-.subcopy {
+.artImg {
   display: none;
 
-  @include q.md {
+  @include q.lg {
     display: block;
-    max-width: 34ch;
-    margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.65);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 25% center;
   }
 }
 
+.artEllipse {
+  position: absolute;
+  left: -70px;
+  top: -90px;
+  width: 230px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: #1b2343;
+
+  @include q.lg {
+    display: none;
+  }
+}
+
+.artFlowers {
+  position: absolute;
+  right: 20px;
+  top: 64px;
+  width: 98px;
+  height: 146px;
+  object-fit: contain;
+
+  @include q.lg {
+    display: none;
+  }
+}
+
+.artLogo {
+  position: absolute;
+  left: 24px;
+  top: 62px;
+  z-index: 2;
+  --logo-mark-size: 22px;
+  --logo-word-size: 18px;
+  --logo-spring-size: 21px;
+
+  @include q.lg {
+    left: 40px;
+    top: 38px;
+    --logo-mark-size: 26px;
+    --logo-word-size: 22px;
+    --logo-spring-size: 25px;
+  }
+}
+
+.headlineDesktop {
+  display: none;
+
+  @include q.lg {
+    display: block;
+    position: absolute;
+    left: 40px;
+    right: 40px;
+    bottom: 44px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 1.08;
+    color: #ffffff;
+  }
+}
+
+.headlineAccent {
+  color: #cfe2fa;
+}
+
+.headlineMobile {
+  position: absolute;
+  left: 24px;
+  bottom: 94px;
+  width: 220px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 31px;
+  line-height: 1.08;
+  color: #ffffff;
+  text-wrap: balance;
+
+  @include q.lg {
+    display: none;
+  }
+}
+
+// ---- Form side ----
 .formSide {
+  @include q.lg {
+    display: flex;
+    flex: 1 1 50%;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0 60px;
+    background-color: #f6f5f2;
+  }
+}
+
+.formInner {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  margin-top: -2.5rem;
-  padding: 0 1rem 2rem;
-
-  @include q.md {
-    align-items: center;
-    margin-top: 0;
-    padding: 1rem;
-  }
-}
-
-.panel {
-  display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
-  max-width: 400px;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  width: 100%;
-  padding: 2rem;
+  gap: 20px;
+  margin: -64px 16px 0;
+  padding: 26px 22px 24px;
   background-color: #ffffff;
-  border: 1px solid #eaeaea;
-  border-radius: 12px;
-}
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 12px 32px rgba(20, 24, 46, 0.12);
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  @include q.sm {
+    max-width: 440px;
+    margin-inline: auto;
+  }
+
+  @include q.lg {
+    width: 100%;
+    max-width: 460px;
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  }
 }
 
 .title {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
-}
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 38px;
+  line-height: 1;
+  color: #14182e;
 
-.subtitle {
-  display: none;
+  em {
+    font-style: italic;
+  }
 
-  @include q.md {
-    display: block;
-    margin: 0;
-    font-size: 0.85rem;
-    color: #8a8a8a;
+  @include q.lg {
+    font-size: 56px;
   }
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
+  gap: 12px;
 
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #4a4a4a;
+  @include q.lg {
+    gap: 14px;
+  }
 }
 
 .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #3f3f46;
+}
+
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  color: #71717a;
+  pointer-events: none;
+}
+
+.input {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  font-family: inherit;
-  font-size: 0.95rem;
-  color: #1a1a1a;
+  height: 52px;
+  padding: 0 16px 0 46px;
+  font-family: var(--font);
+  font-size: 16px;
+  color: #14182e;
   background-color: #ffffff;
-  border: 1px solid #d5d5d5;
-  border-radius: 8px;
+  border: 1px solid #dcdcd8;
+  border-radius: 10px;
 
   &::placeholder {
-    color: #9a9a9a;
+    color: #9a9aa2;
   }
 
   &:focus {
     outline: none;
-    border-color: var(--accent-strong);
-    box-shadow: 0 0 0 3px rgba(107, 79, 187, 0.25);
+    border-color: #7fb5f0;
+    box-shadow: 0 0 0 3px rgba(169, 205, 247, 0.4);
+  }
+
+  @include q.lg {
+    height: 50px;
   }
 }
 
-.passwordWrap {
-  position: relative;
-  display: flex;
+.inputPassword {
+  padding-right: 52px;
+}
 
-  .field {
-    padding-right: 3.75rem;
+.inputInvalid {
+  border-color: var(--danger);
+
+  &:focus {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(211, 54, 54, 0.25);
   }
 }
 
 .toggle {
   position: absolute;
+  right: 4px;
   top: 50%;
-  right: 0.75rem;
   transform: translateY(-50%);
-  padding: 0.15rem 0.25rem;
-  font-size: 0.8rem;
-  color: #4a4a4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: #71717a;
   background: none;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 
   &:hover {
-    color: #1a1a1a;
+    color: #3f3f46;
   }
 
   &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(107, 79, 187, 0.25);
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
   }
 }
 
-.errorBox {
+.fieldError {
   margin: 0;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.85rem;
-  color: #d33636;
-  background-color: #fdf2f2;
-  border-radius: 8px;
+  font-size: 13px;
+  color: var(--danger);
 }
 
-.form .submit {
+.serverError {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+// Doubled class to override the shared Button's default variant styles.
+.submit.submit {
   width: 100%;
-  padding: 0.7rem 1rem;
-  font-size: 0.95rem;
-}
+  height: 52px;
+  padding: 0 1rem;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 600;
+  color: #14182e;
+  background-color: var(--accent);
+  border: none;
+  border-radius: 10px;
 
-.footer {
-  margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: #8a8a8a;
-  text-align: center;
-}
+  &:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+  }
 
-.footerEmphasis {
-  font-weight: 500;
-  color: var(--accent-strong);
+  &:active:not(:disabled) {
+    background-color: var(--accent-active);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
+  }
+
+  @include q.lg {
+    height: 50px;
+    font-size: 15px;
+  }
 }

@@ -1,27 +1,21 @@
 @use "../mixins/media" as q;
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
 
 :root {
   --bg-primary: #202124;
   --bg-page: #f6f6f6;
 
   --text-white: white;
-
-  // Lilac accent. --accent is the existing Button accent colour; --accent-strong
-  // is the darker sibling for small text and focus rings, where --accent does not
-  // have enough contrast against white.
-  --accent: #cbb8f1;
-  --accent-strong: #6b4fbb;
+  --accent: #a9cdf7;
+  --accent-strong: #2f66c4;
+  --accent-hover: #8bbaf0;
+  --accent-active: #74aaeb;
+  --danger: #d33636;
 
   --font: "inter", sans-serif;
-
-  // Shared width cap so the homepage header content and the employee list
-  // below it grow together and stop expanding at the same point.
+  --font-display: "Instrument Serif", serif;
   --content-max-width: clamp(600px, 90vw, 1050px);
-
-  // Height reserved for the mobile bottom nav. 0 once the nav is hidden at md,
-  // so useFitRows stops reserving space for it on desktop. Single source of
-  // truth read by both BottomNav.module.scss and the useFitRows hook.
   --bottom-nav-height: 64px;
 
   @include q.md {
