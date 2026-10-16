@@ -12,7 +12,7 @@
   width: 100%;
   padding: 0 1.5em;
   background-color: var(--bg-primary);
-  border-bottom: 0.01px solid rgb(52, 52, 52);
+  border-bottom: 1px solid var(--navy-line);
 }
 
 .left {
@@ -47,7 +47,7 @@
   padding: 0.25em 0;
   font-size: 0.95rem;
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--on-navy-muted);
   transition: color 0.15s ease;
 
   &:hover {
@@ -66,7 +66,7 @@
     right: 0;
     bottom: -1.65em;
     height: 2px;
-    background-color: white;
+    background-color: var(--accent);
   }
 }
 
@@ -77,18 +77,43 @@
 
 .trigger {
   @include dd.trigger-base;
-  gap: 0.5em;
-  padding: 0.35em 0.5em;
+  gap: 10px;
+  padding: 4px 8px 4px 4px;
+  min-width: 44px;
+  min-height: 44px;
   border: none;
-  border-radius: 8px;
-  background-color: transparent;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  justify-content: center;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @include q.md {
+    padding: 5px 8px 5px 5px;
+    justify-content: flex-start;
+    min-width: 0;
+    min-height: 0;
+  }
 }
 
 .name {
+  display: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 14px;
   color: white;
+
+  @include q.md {
+    display: inline;
+  }
 }
 
 .chevron {
@@ -103,12 +128,77 @@
 
 .panel {
   @include dd.panel;
+  width: 250px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid #ececf0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 16px 40px rgba(15, 20, 46, 0.22);
+  margin-top: 4px;
+
+  @include q.md {
+    width: 240px;
+  }
+}
+
+.panelHeader {
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid #f1f1f4;
+  margin-bottom: 6px;
+}
+
+.panelName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panelEmail {
+  font-size: 13px;
+  color: #71717a;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menuItem {
   @include dd.option;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+
+  svg {
+    color: #52525b;
+    flex: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background-color: #f1f2f6;
+    outline: none;
+  }
+
+  @include q.md {
+    min-height: 40px;
+  }
 }
 
 .logout {
-  color: #d33636;
+  color: #b42323;
+
+  svg {
+    color: #b42323;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background-color: #fdf0f0;
+  }
 }

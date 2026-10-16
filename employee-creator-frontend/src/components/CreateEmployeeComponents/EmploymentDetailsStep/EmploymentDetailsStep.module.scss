@@ -9,7 +9,7 @@
   h3 {
     font-size: 1rem;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--ink);
     margin: 0 0 0.5rem 0;
   }
 
@@ -18,7 +18,7 @@
     align-items: center;
     gap: 0.4rem;
     font-size: 0.9rem;
-    color: #1a1a1a;
+    color: var(--ink);
     margin: 0.25rem 0;
   }
 }

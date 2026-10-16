@@ -20,7 +20,7 @@
 }
 
 .active {
-  color: #1a1a1a;
+  color: var(--ink);
   font-weight: 600;
-  border-bottom-color: #1a1a1a;
+  border-bottom-color: var(--ink);
 }

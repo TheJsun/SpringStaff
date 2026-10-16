@@ -1,7 +1,8 @@
 @use "../../scss/variables/variables" as *;
+@use "../../scss/mixins/media" as q;
 
 .logo {
-  --logo-mark-size: 24px;
+  --logo-mark-size: 26px;
   --logo-word-size: 20px;
   --logo-spring-size: 23px;
 
@@ -10,12 +11,17 @@
   gap: 8px;
   line-height: 1;
   user-select: none;
+
+  @include q.md {
+    --logo-mark-size: 28px;
+  }
 }
 
 .mark {
   flex: none;
   width: var(--logo-mark-size);
   height: var(--logo-mark-size);
+  border-radius: calc(var(--logo-mark-size) / 4);
 }
 
 .word {
@@ -39,24 +45,8 @@
 
 .light {
   color: #ffffff;
-
-  .markMain {
-    fill: #ffffff;
-  }
-
-  .markAccent {
-    fill: #cfe2fa;
-  }
 }
 
 .dark {
   color: #0f142e;
-
-  .markMain {
-    fill: #0f142e;
-  }
-
-  .markAccent {
-    fill: var(--accent);
-  }
 }

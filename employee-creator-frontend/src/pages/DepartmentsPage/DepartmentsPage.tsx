@@ -65,7 +65,7 @@ const DepartmentsPage = () => {
         action={
           isAdmin ? (
             <Button
-              variant="accent"
+              variant="onDark"
               onClick={() => setModal({ mode: "create" })}
             >
               New department

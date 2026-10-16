@@ -19,7 +19,7 @@ export default function CreateEmployeeHeader({
       <div className={classes.headerContent}>
         <div className={classes.row}>
           <Button
-            variant="accent"
+            variant="onDark"
             className={classes.backBtn}
             onClick={handleBack}
           >

@@ -66,7 +66,7 @@ export default function EmployeeDetailsHeader({
           <div className={classes.actions}>
             {isAdmin && (
               <Button
-                variant="accent"
+                variant="onDark"
                 className={classes.actionButton}
                 disabled={isLoading || !employee}
                 onClick={() => employee && onEdit(employee)}
@@ -74,7 +74,6 @@ export default function EmployeeDetailsHeader({
                 Edit profile
               </Button>
             )}
-            {/* Email stays unconditional - it's a mailto:, not an API action. */}
             <a
               href={employee ? `mailto:${employee.email}` : undefined}
               aria-disabled={isLoading || !employee}

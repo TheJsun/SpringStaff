@@ -3,7 +3,7 @@
   align-items: center;
   gap: 0.35em;
   font-size: 0.9rem;
-  color: #1a1a1a;
+  color: var(--ink);
   white-space: nowrap;
 }
 
@@ -33,7 +33,7 @@
   border-radius: 6px;
   background: transparent;
   font-size: 0.85rem;
-  color: #1a1a1a;
+  color: var(--ink);
   text-align: left;
   white-space: nowrap;
 

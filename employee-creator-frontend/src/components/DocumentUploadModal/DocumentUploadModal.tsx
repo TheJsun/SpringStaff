@@ -104,7 +104,7 @@ export function DocumentUploadModal({
         <div className={classes.actions}>
           <Button
             type="submit"
-            variant="accent"
+            variant="primary"
             disabled={uploadMutation.isPending}
           >
             {uploadMutation.isPending ? "Uploading..." : "Upload"}

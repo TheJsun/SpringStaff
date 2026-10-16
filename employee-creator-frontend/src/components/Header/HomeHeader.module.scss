@@ -33,8 +33,6 @@
 
 .action {
   margin-top: 26px;
-  // .headerContent is a non-wrapping space-between row, so two buttons here
-  // would squeeze the title at narrow widths without the wrap.
   display: flex;
   flex-wrap: wrap;
   gap: 0.5em;
@@ -43,5 +41,5 @@
 }
 
 .employeeCount {
-  color: rgb(194, 193, 193);
+  color: var(--on-navy-muted);
 }

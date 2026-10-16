@@ -6,7 +6,7 @@
   justify-content: center;
   padding: 0.55rem 1rem;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 400;
   border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
@@ -21,17 +21,31 @@
 }
 
 .primary {
-  background-color: #1a1a1a;
+  background-color: var(--ink);
   color: #ffffff;
 
   &:hover:not(:disabled) {
-    background-color: #333333;
+    background-color: var(--ink-hover);
+  }
+}
+
+.onDark {
+  background-color: #fff;
+  color: var(--ink);
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    background-color: #eef1f7;
+  }
+
+  &:active:not(:disabled) {
+    background-color: #dfe4ee;
   }
 }
 
 .secondary {
   background-color: #ffffff;
-  color: #1a1a1a;
+  color: var(--ink);
   border-color: #d5d5d5;
 
   &:hover:not(:disabled) {

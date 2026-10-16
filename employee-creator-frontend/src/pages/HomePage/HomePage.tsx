@@ -135,7 +135,7 @@ const HomePage = () => {
           isAdmin ? (
             <>
               <Button
-                variant="accent"
+                variant="onDark"
                 onClick={() => navigate("/employees/new")}
               >
                 Add Employee

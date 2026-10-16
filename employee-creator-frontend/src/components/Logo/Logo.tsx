@@ -9,15 +9,12 @@ export default function Logo({ tone = "dark", className }: LogoProps) {
   const toneClass = tone === "light" ? classes.light : classes.dark;
   return (
     <span className={`${classes.logo} ${toneClass} ${className ?? ""}`.trim()}>
-      <svg
-        className={classes.mark}
-        viewBox="0 0 24 24"
+      <img
+        src="/flower-mark.png"
+        alt=""
         aria-hidden="true"
-        focusable="false"
-      >
-        <circle className={classes.markMain} cx="9" cy="15" r="6.5" />
-        <circle className={classes.markAccent} cx="17" cy="8" r="3.5" />
-      </svg>
+        className={classes.mark}
+      />
       <span className={classes.word}>
         <span className={classes.wordSpring}>Spring</span>
         <span className={classes.wordStaff}>Staff</span>

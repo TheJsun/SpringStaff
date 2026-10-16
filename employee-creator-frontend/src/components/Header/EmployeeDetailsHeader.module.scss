@@ -20,7 +20,7 @@
 
 .breadcrumb {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--on-navy-muted);
 
   a {
     color: inherit;
@@ -64,7 +64,7 @@
 
 .subtitle {
   margin: 0;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--on-navy-muted);
 }
 
 .actions {
