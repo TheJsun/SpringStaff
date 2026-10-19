@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,15 +48,18 @@ public class AuthController {
   private final AuthenticationManager authenticationManager;
   private final SecurityContextRepository securityContextRepository;
   private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
+  private final LoginRateLimiter loginRateLimiter;
 
   public AuthController(
     AuthenticationManager authenticationManager,
     SecurityContextRepository securityContextRepository,
-    SessionAuthenticationStrategy sessionAuthenticationStrategy
+    SessionAuthenticationStrategy sessionAuthenticationStrategy,
+    LoginRateLimiter loginRateLimiter
   ) {
     this.authenticationManager = authenticationManager;
     this.securityContextRepository = securityContextRepository;
     this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
+    this.loginRateLimiter = loginRateLimiter;
   }
 
   @PostMapping("/auth/login")
@@ -64,15 +68,26 @@ public class AuthController {
     HttpServletRequest httpRequest,
     HttpServletResponse httpResponse
   ) {
+    String rateLimitKey =
+      httpRequest.getRemoteAddr() +
+      ":" +
+      request.email().toLowerCase();
+    loginRateLimiter.checkAllowed(rateLimitKey);
+
     Authentication unauthenticated =
       UsernamePasswordAuthenticationToken.unauthenticated(
         request.email(),
         request.password()
       );
 
-    Authentication authenticated = authenticationManager.authenticate(
-      unauthenticated
-    );
+    Authentication authenticated;
+    try {
+      authenticated = authenticationManager.authenticate(unauthenticated);
+    } catch (AuthenticationException ex) {
+      loginRateLimiter.recordFailure(rateLimitKey);
+      throw ex;
+    }
+    loginRateLimiter.reset(rateLimitKey);
 
     sessionAuthenticationStrategy.onAuthentication(
       authenticated,
