@@ -199,10 +199,108 @@ For a split-domain deploy instead (SPA on a static host), build the frontend wit
 `VITE_API_URL` set to the API's absolute URL, set `app.cors.allowed-origins` to
 the SPA origin, and change the prod session cookie to `same-site=none`.
 
+### Single-VM stack (Oracle Cloud Always Free)
+
+`docker-compose.prod.yml` runs the whole thing on one box: the app (from the GHCR
+image), a `mysql:8` container with a persistent `db_data` volume, and a **Caddy**
+reverse proxy that terminates HTTPS. TLS is **required**, not optional — the prod
+session cookie is `Secure`, so login silently fails over plain `http://`. Caddy
+obtains a Let's Encrypt certificate automatically, which needs a real hostname
+(the free DuckDNS subdomain `spring-staff.duckdns.org`) pointed at the VM's IP,
+not a bare address. Behind the proxy the app sets
+`server.forward-headers-strategy=framework` so `LoginRateLimiter` sees the real
+client IP.
+
+On the VM: clone the repo, copy `.env.example` to `.env` and fill it in (it is
+git-ignored), then:
+
+```bash
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+#### First admin
+
+Prod starts with an empty `users` table (`DataSeeder` is dev-only), so
+`BootstrapAdminSeeder` creates the first `ADMIN` **only** when
+`APP_BOOTSTRAP_ADMIN_EMAIL` + `APP_BOOTSTRAP_ADMIN_PASSWORD` are set *and* the
+table is empty. Set them in `.env` for the first boot, log in, then blank them
+out (the empty-table guard stops it re-running). The admin has no linked employee
+record; create a profile later via the UI if wanted.
+
 ### Continuous deployment
 
-`.github/workflows/cd.yml` runs after CI succeeds on `main`: it builds the image
-and pushes it to GHCR (tagged with the commit SHA and `latest`). The final
-deploy call and a `/actuator/health` smoke test are included as a commented,
-platform-specific step — wire in your platform's deploy hook (Render/Railway/Fly
-deploy hook URL, etc.) and public URL via repository secrets to finish the loop.
+`.github/workflows/cd.yml` runs after CI succeeds on `main`: it builds a
+multi-arch (`amd64` + `arm64`) image and pushes it to GHCR (tagged with the commit
+SHA and `latest`), then a `deploy` job SSHes into the VM, runs
+`docker compose ... pull && up -d`, and smoke-tests `GET /actuator/health` until
+it reports `UP`. Provide `SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY` and `DEPLOY_URL`
+as repository secrets, and make the GHCR package public (or `docker login ghcr.io`
+on the VM) so `pull` works.
+
+## Deploy your own copy
+
+This is a **single-tenant, self-hosted** app: there is no shared service to sign up
+for — each team runs its own independent instance with its own database, its own
+admin, and its own URL. The steps below stand one up from scratch. The free
+reference host is an **Oracle Cloud Always Free** VM, but any Docker host works.
+
+**You'll need:** a Docker host with the Docker Engine + Compose plugin installed; a
+hostname you control pointing at it (a free [DuckDNS](https://www.duckdns.org)
+subdomain is fine); and ports **80** and **443** reachable. Budget ~15–20 minutes.
+
+1. **Get the files onto the host.** Clone this repo (or your fork) onto the host —
+   you need `docker-compose.prod.yml`, `Caddyfile`, and `.env.example`:
+   ```bash
+   git clone <your-repo-url> employee-creator && cd employee-creator
+   ```
+
+2. **Point a hostname at the host.** Create a DNS record (e.g. a DuckDNS subdomain
+   like `my-team.duckdns.org`) resolving to the host's public IP. Open ingress for
+   ports **80** and **443** in *both* your cloud firewall/security list **and** the
+   OS firewall (Oracle images block these by default). HTTPS is mandatory — the prod
+   session cookie is `Secure`, so login fails over plain `http://`.
+
+3. **Use *your* hostname in two places** (the repo ships the author's placeholder
+   `spring-staff.duckdns.org` — replace it):
+   - `Caddyfile` — change the site address to your hostname.
+   - `.env` — set `APP_CORS_ALLOWED_ORIGINS` to `https://<your-hostname>` (next step).
+
+4. **Create your `.env`** from the template and fill in real values:
+   ```bash
+   cp .env.example .env
+   # edit .env: DB_USERNAME/DB_PASSWORD (your choice), APP_CORS_ALLOWED_ORIGINS,
+   # and APP_BOOTSTRAP_ADMIN_EMAIL/APP_BOOTSTRAP_ADMIN_PASSWORD for the first admin
+   ```
+   `.env` is git-ignored and stays only on this host — never commit it.
+
+5. **Choose an image source.** `docker-compose.prod.yml` references
+   `ghcr.io/thejsun/employee-creator:latest` (this project's image). For your own
+   copy either:
+   - **Build from source on the host** (fully self-contained) — add `build: .` under
+     the `app` service (keeping or removing `image:`), then `docker compose -f
+     docker-compose.prod.yml up -d --build`. Note the multi-stage build needs enough
+     RAM (comfortable on an Ampere A1; tight on a 1 GB micro VM).
+   - **Or** push your own built image to your own registry and point the `image:`
+     line at it.
+
+6. **Launch:**
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+   On first start, MySQL initialises the `db_data` volume, Flyway applies the schema,
+   the app creates your bootstrap admin, and Caddy fetches a TLS certificate.
+
+7. **Verify and secure:**
+   ```bash
+   curl -fsS https://<your-hostname>/actuator/health   # -> {"status":"UP"}
+   ```
+   Open `https://<your-hostname>`, log in with the bootstrap admin credentials, then
+   **remove** `APP_BOOTSTRAP_ADMIN_*` from `.env` and re-run `up -d` (the empty-table
+   guard already stops the seeder re-running, but don't leave the password lying in
+   `.env`).
+
+**Automating redeploys (optional):** wire up CD as above against *your* registry and
+host — set the `SSH_*` and `DEPLOY_URL` repository secrets and point the image name
+at your own package. Without it, deploying an update is just `git pull && docker
+compose -f docker-compose.prod.yml up -d --build` on the host.
