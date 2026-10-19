@@ -1,3 +1,4 @@
+import { apiFetch } from "./http";
 import type { DocumentResponse } from "../schemas/document-schema";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -6,7 +7,7 @@ const documentsUrl = (employeeId: number) =>
   `${BASE_URL}/employees/${employeeId}/documents`;
 
 export const getDocuments = async (employeeId: number) => {
-  const response = await fetch(documentsUrl(employeeId), {
+  const response = await apiFetch(documentsUrl(employeeId), {
     credentials: "include",
   });
   if (!response.ok) {
@@ -28,7 +29,7 @@ export const uploadDocument = async (
 
   // Deliberately no Content-Type header: the browser sets multipart/form-data
   // with the correct boundary itself.
-  const response = await fetch(documentsUrl(employeeId), {
+  const response = await apiFetch(documentsUrl(employeeId), {
     method: "POST",
     body: formData,
     credentials: "include",
@@ -43,7 +44,7 @@ export const uploadDocument = async (
 };
 
 export const deleteDocument = async (employeeId: number, documentId: number) => {
-  const response = await fetch(`${documentsUrl(employeeId)}/${documentId}`, {
+  const response = await apiFetch(`${documentsUrl(employeeId)}/${documentId}`, {
     method: "DELETE",
     credentials: "include",
   });

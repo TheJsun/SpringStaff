@@ -1,3 +1,4 @@
+import { apiFetch } from "./http";
 import type {
   CreateEmployeeRequest,
   CreateEmployeeResponse,
@@ -8,7 +9,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 const EMPLOYEE_BASE_URL = `${BASE_URL}/employees`;
 
 export const getAllEmployees = async () => {
-  const response = await fetch(EMPLOYEE_BASE_URL, {
+  const response = await apiFetch(EMPLOYEE_BASE_URL, {
     credentials: "include",
   });
   if (!response.ok) {
@@ -21,7 +22,7 @@ export const getAllEmployees = async () => {
 };
 
 export const getEmployeeById = async (id: number) => {
-  const response = await fetch(`${EMPLOYEE_BASE_URL}/${id}`, {
+  const response = await apiFetch(`${EMPLOYEE_BASE_URL}/${id}`, {
     credentials: "include",
   });
   if (!response.ok) {
@@ -34,7 +35,7 @@ export const getEmployeeById = async (id: number) => {
 };
 
 export const createEmployee = async (data: CreateEmployeeRequest) => {
-  const response = await fetch(EMPLOYEE_BASE_URL, {
+  const response = await apiFetch(EMPLOYEE_BASE_URL, {
     method: "POST",
     body: JSON.stringify(data),
     credentials: "include",
@@ -50,7 +51,7 @@ export const createEmployee = async (data: CreateEmployeeRequest) => {
 };
 
 export const deleteEmployee = async (id: number) => {
-  const response = await fetch(`${EMPLOYEE_BASE_URL}/${id}`, {
+  const response = await apiFetch(`${EMPLOYEE_BASE_URL}/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -66,7 +67,7 @@ export const updateEmployee = async (
   id: number,
   data: CreateEmployeeRequest,
 ) => {
-  const response = await fetch(`${EMPLOYEE_BASE_URL}/${id}`, {
+  const response = await apiFetch(`${EMPLOYEE_BASE_URL}/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
     credentials: "include",

@@ -1,3 +1,4 @@
+import { apiFetch } from "./http";
 import type {
   CreateDepartmentRequest,
   DepartmentResponse,
@@ -7,7 +8,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 const DEPARTMENT_BASE_URL = `${BASE_URL}/departments`;
 
 export const getAllDepartments = async () => {
-  const response = await fetch(`${DEPARTMENT_BASE_URL}`, {
+  const response = await apiFetch(`${DEPARTMENT_BASE_URL}`, {
     credentials: "include",
   });
   if (!response.ok) {
@@ -20,7 +21,7 @@ export const getAllDepartments = async () => {
 };
 
 export const getDepartmentById = async (id: number) => {
-  const response = await fetch(`${DEPARTMENT_BASE_URL}/${id}`, {
+  const response = await apiFetch(`${DEPARTMENT_BASE_URL}/${id}`, {
     credentials: "include",
   });
   if (!response.ok) {
@@ -33,7 +34,7 @@ export const getDepartmentById = async (id: number) => {
 };
 
 export const createDepartment = async (data: CreateDepartmentRequest) => {
-  const response = await fetch(DEPARTMENT_BASE_URL, {
+  const response = await apiFetch(DEPARTMENT_BASE_URL, {
     method: "POST",
     body: JSON.stringify(data),
     credentials: "include",
@@ -49,7 +50,7 @@ export const createDepartment = async (data: CreateDepartmentRequest) => {
 };
 
 export const deleteDepartment = async (id: number) => {
-  const response = await fetch(`${DEPARTMENT_BASE_URL}/${id}`, {
+  const response = await apiFetch(`${DEPARTMENT_BASE_URL}/${id}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -65,7 +66,7 @@ export const updateDepartment = async (
   id: number,
   data: CreateDepartmentRequest,
 ) => {
-  const response = await fetch(`${DEPARTMENT_BASE_URL}/${id}`, {
+  const response = await apiFetch(`${DEPARTMENT_BASE_URL}/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),
     credentials: "include",

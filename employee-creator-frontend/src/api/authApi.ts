@@ -1,3 +1,5 @@
+import { apiFetch } from "./http";
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 const AUTH_BASE_URL = `${BASE_URL}/auth`;
 
@@ -12,7 +14,7 @@ export async function login(
   email: string,
   password: string,
 ): Promise<MeResponse> {
-  const response = await fetch(`${AUTH_BASE_URL}/login`, {
+  const response = await apiFetch(`${AUTH_BASE_URL}/login`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -29,7 +31,7 @@ export async function login(
 }
 
 export async function getMe(): Promise<MeResponse | null> {
-  const response = await fetch(`${BASE_URL}/me`, {
+  const response = await apiFetch(`${BASE_URL}/me`, {
     credentials: "include",
   });
   if (response.status === 401) {
@@ -42,7 +44,7 @@ export async function getMe(): Promise<MeResponse | null> {
 }
 
 export async function logout(): Promise<void> {
-  const response = await fetch(`${AUTH_BASE_URL}/logout`, {
+  const response = await apiFetch(`${AUTH_BASE_URL}/logout`, {
     method: "POST",
     credentials: "include",
   });

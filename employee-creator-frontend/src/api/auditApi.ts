@@ -1,3 +1,4 @@
+import { apiFetch } from "./http";
 import type {
   AuditActor,
   AuditLogParams,
@@ -19,7 +20,7 @@ export const getAuditLogs = async (params: AuditLogParams = {}) => {
   const queryString = query.toString();
   const url = queryString ? `${AUDIT_BASE_URL}?${queryString}` : AUDIT_BASE_URL;
 
-  const response = await fetch(url, { credentials: "include" });
+  const response = await apiFetch(url, { credentials: "include" });
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     throw new Error(
@@ -30,7 +31,7 @@ export const getAuditLogs = async (params: AuditLogParams = {}) => {
 };
 
 export const getAuditActors = async () => {
-  const response = await fetch(`${AUDIT_BASE_URL}/actors`, {
+  const response = await apiFetch(`${AUDIT_BASE_URL}/actors`, {
     credentials: "include",
   });
   if (!response.ok) {
