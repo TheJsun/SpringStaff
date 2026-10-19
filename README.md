@@ -13,18 +13,22 @@ A full-stack app for managing employees and departments: a Spring Boot REST API 
 - Node.js (for the frontend)
 - A running MySQL instance (or adjust `spring.datasource.url` in `src/main/resources/application.properties` to point at your own)
 
+## Configuration profiles
+
+Config is split by Spring profile:
+
+- `application.properties` — profile-neutral base (no datasource, no active
+  profile, no secrets).
+- `application-dev.properties` — local MySQL, verbose SQL, demo seeder. The
+  `spring-boot-maven-plugin` activates `dev` so `./mvnw spring-boot:run` uses it.
+- `application-prod.properties` — everything from the environment, SQL logging
+  off, `Secure` session cookie. Activated by `SPRING_PROFILES_ACTIVE=prod` (the
+  Docker image sets this).
+
+The packaged jar carries **no** default profile, so it cannot accidentally boot
+as `dev`. `DataSeeder` is `@Profile("dev")` and never runs in prod.
+
 ## Running the backend
-
-```bash
-./mvnw spring-boot:run
-```
-
-Required environment variables:
-
-- `DB_USERNAME` — MySQL username (the schema `employee_creator` must already exist).
-- `DB_PASSWORD` — MySQL password.
-
-Neither is committed. Set them in your shell before starting the app:
 
 ```bash
 export DB_USERNAME=root
@@ -32,10 +36,34 @@ export DB_PASSWORD=your-password
 ./mvnw spring-boot:run
 ```
 
+`DB_USERNAME` / `DB_PASSWORD` are not committed. The schema `employee_creator`
+must exist; Flyway creates the tables (see Database migrations below).
+
 Tests run with:
 
 ```bash
 ./mvnw test
+```
+
+## Database migrations
+
+Flyway owns the schema (`src/main/resources/db/migration/`), and Hibernate is set
+to `validate` — it never alters a live schema. Change an entity ⇒ add a new
+`V<n>__description.sql` migration; `validate` will fail loudly if the entities and
+tables drift. Under test, Flyway is disabled and H2 is created by Hibernate
+(`create-drop`).
+
+`V1__init.sql` was generated from the entities by Hibernate (MySQL dialect) so it
+matches `validate` exactly. **Verify once against a fresh MySQL before the first
+prod deploy** (this environment had no MySQL to run it against):
+
+```bash
+# against an empty throwaway schema
+SPRING_PROFILES_ACTIVE=prod \
+  DB_URL=jdbc:mysql://localhost:3306/employee_creator_fresh \
+  DB_USERNAME=... DB_PASSWORD=... APP_CORS_ALLOWED_ORIGINS=http://localhost \
+  ./mvnw spring-boot:run
+# success = Flyway applies V1 and Hibernate "validate" passes with no error
 ```
 
 ## Authentication
@@ -74,13 +102,23 @@ only when the `users` table is empty:
 These are throwaway development credentials. Do not run the `dev` profile
 against anything you care about.
 
-### Known gap
+### CSRF protection
 
-CSRF protection is disabled (`SecurityConfig`). Combined with cookie sessions
-and `allowCredentials(true)` CORS, that is a real exposure and is only
-acceptable for local development. Before deploying, enable
-`CookieCsrfTokenRepository.withHttpOnlyFalse()` and send the `XSRF-TOKEN`
-cookie back as an `X-XSRF-TOKEN` header from the frontend.
+CSRF is enabled (`SecurityConfig`, toggled by `app.security.csrf.enabled`, on in
+dev/prod and off under test). Spring Security stores the token in a JS-readable
+`XSRF-TOKEN` cookie; the frontend's `apiFetch` wrapper (`src/api/http.ts`)
+reflects it back as an `X-XSRF-TOKEN` header on every mutating request. A
+`CsrfCookieFilter` forces the cookie to be issued on the first `GET /api/me`, so
+it is present before the login form is submitted. `CsrfEnforcementTest` proves a
+tokenless mutation is rejected with `403` and a token-carrying one succeeds.
+
+### Login rate limiting
+
+`POST /api/auth/login` is throttled by `LoginRateLimiter` (per client IP +
+email): 5 failed attempts trigger a 15-minute lockout returning `429`. State is
+in-memory, which is correct for a single instance; scaling horizontally would
+require moving it to a shared store (e.g. Redis). Behind a proxy/load balancer,
+set `server.forward-headers-strategy=framework` so the real client IP is used.
 
 ## Running the frontend
 
@@ -135,4 +173,36 @@ locally.
 - No backend coverage reporting (no JaCoCo)
 - No formatter check (no Prettier or `.editorconfig`)
 - `strict` is not enabled in the TypeScript config, so `tsc -b` is a weaker gate than it appears
-- No container build or deployment step
+
+## Deployment
+
+The app deploys as a **single same-origin container**: the SPA is built and
+bundled into the Spring Boot jar (`classpath:/static`), so one image serves the
+UI at `/` and the API at `/api/**`. This keeps the session cookie first-party
+(`SameSite=Lax` + CSRF stay simple) and all but removes CORS.
+
+```bash
+docker build -t employee-creator .
+docker run --rm -p 8080:8080 \
+  -e DB_URL="jdbc:mysql://<host>:3306/employee_creator" \
+  -e DB_USERNAME=... -e DB_PASSWORD=... \
+  -e APP_CORS_ALLOWED_ORIGINS="https://your-domain" \
+  employee-creator
+```
+
+The image pins `SPRING_PROFILES_ACTIVE=prod` and runs as a non-root user. Point
+your platform's health check at `GET /actuator/health` (returns
+`{"status":"UP"}`). Provision **managed MySQL** rather than a DB container with
+ephemeral storage.
+
+For a split-domain deploy instead (SPA on a static host), build the frontend with
+`VITE_API_URL` set to the API's absolute URL, set `app.cors.allowed-origins` to
+the SPA origin, and change the prod session cookie to `same-site=none`.
+
+### Continuous deployment
+
+`.github/workflows/cd.yml` runs after CI succeeds on `main`: it builds the image
+and pushes it to GHCR (tagged with the commit SHA and `latest`). The final
+deploy call and a `/actuator/health` smoke test are included as a commented,
+platform-specific step — wire in your platform's deploy hook (Render/Railway/Fly
+deploy hook URL, etc.) and public URL via repository secrets to finish the loop.
