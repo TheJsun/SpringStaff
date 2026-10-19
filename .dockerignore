@@ -1,0 +1,18 @@
+# Build outputs and dependencies are rebuilt inside the image.
+target/
+**/node_modules/
+employee-creator-frontend/dist/
+
+# VCS / IDE / OS noise
+.git/
+.github/
+.idea/
+.vscode/
+.settings/
+*.iml
+
+# Local env and docs that shouldn't affect the build
+**/.env
+**/.env.*
+*.md
+HELP.md
