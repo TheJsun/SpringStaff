@@ -4,6 +4,7 @@ import com.jason.employee_creator.common.dtos.ApiErrorResponse;
 import com.jason.employee_creator.common.exceptions.DepartmentInUseException;
 import com.jason.employee_creator.common.exceptions.DuplicateFieldException;
 import com.jason.employee_creator.common.exceptions.NotFoundException;
+import com.jason.employee_creator.common.exceptions.TooManyAttemptsException;
 import com.jason.employee_creator.common.exceptions.UnprocessableContentException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -92,6 +93,20 @@ public class GlobalExceptionHandler {
       req.getRequestURI()
     );
     return new ResponseEntity<>(response, HttpStatus.CONTENT_TOO_LARGE);
+  }
+
+  @ExceptionHandler(TooManyAttemptsException.class)
+  public ResponseEntity<ApiErrorResponse> handleTooManyAttemptsException(
+    TooManyAttemptsException ex,
+    HttpServletRequest req
+  ) {
+    log.warn("Rate limit hit on {}: {}", req.getRequestURI(), ex.getMessage());
+    ApiErrorResponse response = ApiErrorResponse.of(
+      HttpStatus.TOO_MANY_REQUESTS,
+      ex.getMessage(),
+      req.getRequestURI()
+    );
+    return new ResponseEntity<>(response, HttpStatus.TOO_MANY_REQUESTS);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
