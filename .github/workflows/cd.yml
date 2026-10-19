@@ -1,7 +1,5 @@
 name: CD
 
-# Runs only after the CI workflow completes successfully on main, so the image
-# is built from code that already passed backend + frontend checks.
 on:
   workflow_run:
     workflows: ["CI"]
@@ -26,7 +24,6 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      # GHCR repository names must be lowercase; the owner/repo may not be.
       - name: Compute image name
         id: image
         run: |
@@ -52,20 +49,3 @@ jobs:
             ${{ steps.image.outputs.name }}:${{ github.event.workflow_run.head_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      # --- Deploy + smoke test (platform-specific — enable one) ----------------
-      # Most PaaS options pull the pushed image or build from this repo. Wire the
-      # deploy here, then verify the new release is healthy before finishing:
-      #
-      # - name: Trigger deploy
-      #   run: curl -fsSL -X POST "${{ secrets.DEPLOY_HOOK_URL }}"
-      #
-      # - name: Smoke test /actuator/health
-      #   run: |
-      #     for i in $(seq 1 30); do
-      #       if curl -fsS "${{ secrets.PUBLIC_URL }}/actuator/health" | grep -q '"status":"UP"'; then
-      #         echo "healthy"; exit 0
-      #       fi
-      #       sleep 10
-      #     done
-      #     echo "service did not become healthy"; exit 1
