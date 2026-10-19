@@ -34,9 +34,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  // On in dev/prod; disabled under test so the existing REST-assured suite
-  // (which does not send CSRF tokens) keeps passing. A dedicated test enables
-  // it to verify enforcement.
   @Value("${app.security.csrf.enabled:true}")
   private boolean csrfEnabled;
 
@@ -48,15 +45,10 @@ public class SecurityConfig {
         auth
           .requestMatchers("/api/auth/login")
           .permitAll()
-          // Health probe for container platforms and the CD smoke test.
           .requestMatchers("/actuator/health", "/actuator/health/**")
           .permitAll()
-          // Everything under the API requires authentication...
           .requestMatchers("/api/**")
           .authenticated()
-          // ...while static SPA assets and client-side routes are public (the
-          // SPA itself gates content by calling /api/me). Harmless for a
-          // split-domain deployment, where nothing but the API is served here.
           .anyRequest()
           .permitAll()
       )
@@ -79,15 +71,8 @@ public class SecurityConfig {
       );
 
     if (csrfEnabled) {
-      // SPA-friendly CSRF: the token is stored in a JS-readable XSRF-TOKEN
-      // cookie and echoed back by the frontend as an X-XSRF-TOKEN header on
-      // mutating requests. SameSite=Lax session cookies already block most
-      // cross-site writes; this is defense-in-depth and a hard requirement for
-      // a split-domain deployment.
       CsrfTokenRequestAttributeHandler requestHandler =
         new CsrfTokenRequestAttributeHandler();
-      // Validate the raw token straight from the header (opt out of the
-      // deferred/BREACH-encoded token, which a stateless SPA cannot supply).
       requestHandler.setCsrfRequestAttributeName(null);
       http
         .csrf(csrf ->
@@ -95,8 +80,6 @@ public class SecurityConfig {
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(requestHandler)
         )
-        // Force the CsrfToken to be loaded so the XSRF-TOKEN cookie is written
-        // on every response, including the initial unauthenticated GET /api/me.
         .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class);
     } else {
       http.csrf(AbstractHttpConfigurer::disable);
@@ -105,11 +88,6 @@ public class SecurityConfig {
     return http.build();
   }
 
-  /**
-   * Causes the deferred {@link CsrfToken} to be resolved on each request so the
-   * {@code XSRF-TOKEN} cookie is sent to the browser even when nothing else
-   * renders the token (e.g. the login page's priming request).
-   */
   static final class CsrfCookieFilter extends OncePerRequestFilter {
 
     @Override
