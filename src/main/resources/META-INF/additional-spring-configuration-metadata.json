@@ -1,0 +1,17 @@
+{
+  "properties": [
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String[]",
+      "description": "Origins permitted to call the /api/** endpoints via CORS. Bound in WebConfig; defaults to http://localhost:5173 when unset.",
+      "sourceType": "com.jason.employee_creator.config.WebConfig"
+    },
+    {
+      "name": "app.security.csrf.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether CSRF protection is enforced. Bound in SecurityConfig; enabled by default and disabled in the test profile.",
+      "sourceType": "com.jason.employee_creator.config.SecurityConfig",
+      "defaultValue": true
+    }
+  ]
+}

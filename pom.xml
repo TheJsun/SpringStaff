@@ -113,6 +113,13 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- Merges META-INF/additional-spring-configuration-metadata.json into the
+		     generated metadata so the IDE recognizes our custom app.* properties -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -129,10 +136,14 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
-		<!-- Versioned schema migrations; replaces Hibernate ddl-auto=update in prod -->
+		<!-- Versioned schema migrations; replaces Hibernate ddl-auto=update in prod.
+		     Spring Boot 4 modularized auto-configuration, so the raw flyway-core
+		     library no longer wires Flyway on its own; the starter pulls in the
+		     spring-boot-flyway auto-config module (and flyway-core) that runs
+		     migrations on startup and supplies the spring.flyway.* metadata. -->
 		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
@@ -161,6 +172,10 @@
                         <groupId>org.projectlombok</groupId>
                         <artifactId>lombok</artifactId>
                         <version>${lombok.version}</version>
+                    </path>
+                    <path>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-configuration-processor</artifactId>
                     </path>
                 </annotationProcessorPaths>
             </configuration>
