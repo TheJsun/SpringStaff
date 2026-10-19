@@ -12,6 +12,18 @@
       "description": "Whether CSRF protection is enforced. Bound in SecurityConfig; enabled by default and disabled in the test profile.",
       "sourceType": "com.jason.employee_creator.config.SecurityConfig",
       "defaultValue": true
+    },
+    {
+      "name": "app.bootstrap.admin.email",
+      "type": "java.lang.String",
+      "description": "Email for the first-boot ADMIN account. Bound in BootstrapAdminSeeder; the admin is created only when this and app.bootstrap.admin.password are set and the users table is empty.",
+      "sourceType": "com.jason.employee_creator.config.BootstrapAdminSeeder"
+    },
+    {
+      "name": "app.bootstrap.admin.password",
+      "type": "java.lang.String",
+      "description": "Raw password for the first-boot ADMIN account (BCrypt-hashed before storage). Bound in BootstrapAdminSeeder; supply via APP_BOOTSTRAP_ADMIN_PASSWORD at runtime and remove after first login.",
+      "sourceType": "com.jason.employee_creator.config.BootstrapAdminSeeder"
     }
   ]
 }
