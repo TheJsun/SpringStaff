@@ -72,13 +72,13 @@ Session-cookie authentication via Spring Security. Logging in returns a `JSESSIO
 cookie that must be sent with every subsequent request; browsers only do this
 cross-origin when the client sets `credentials: "include"` on its requests.
 
-| Endpoint | Access |
-| --- | --- |
-| `POST /api/auth/login` | Public. Body `{ "email": "...", "password": "..." }`. Returns the current user; 401 on bad credentials. |
-| `POST /api/auth/logout` | Invalidates the session. |
-| `GET /api/me` | Any authenticated user. Returns `userId`, `email`, `role`, `employeeId`. |
-| `GET /api/employees`, `GET /api/departments` (and `/{id}`) | Any authenticated user. |
-| `POST`, `PUT`, `PATCH`, `DELETE` on employees and departments | `ADMIN` only. |
+| Endpoint                                                      | Access                                                                                                  |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `POST /api/auth/login`                                        | Public. Body `{ "email": "...", "password": "..." }`. Returns the current user; 401 on bad credentials. |
+| `POST /api/auth/logout`                                       | Invalidates the session.                                                                                |
+| `GET /api/me`                                                 | Any authenticated user. Returns `userId`, `email`, `role`, `employeeId`.                                |
+| `GET /api/employees`, `GET /api/departments` (and `/{id}`)    | Any authenticated user.                                                                                 |
+| `POST`, `PUT`, `PATCH`, `DELETE` on employees and departments | `ADMIN` only.                                                                                           |
 
 Roles are `ADMIN` and `EMPLOYEE`, enforced with `@PreAuthorize("hasRole('ADMIN')")`
 on the service methods. Unauthenticated requests get 401, authenticated
@@ -93,10 +93,10 @@ record.
 `DataSeeder` runs only under the `dev` profile (active by default locally) and
 only when the `users` table is empty:
 
-| Email | Password | Role |
-| --- | --- | --- |
-| `admin@demo.com` | `admin123` | `ADMIN` |
-| `bob@demo.com` | `password123` | `EMPLOYEE` |
+| Email            | Password      | Role       |
+| ---------------- | ------------- | ---------- |
+| `admin@demo.com` | `admin123`    | `ADMIN`    |
+| `bob@demo.com`   | `password123` | `EMPLOYEE` |
 | `alice@demo.com` | `password123` | `EMPLOYEE` |
 
 These are throwaway development credentials. Do not run the `dev` profile
@@ -148,9 +148,9 @@ npm run lint    # run ESLint
 `.github/workflows/ci.yml` runs on every pull request into `main` and on pushes
 to `main`. Two jobs run in parallel:
 
-| Job | Runs |
-| --- | --- |
-| Backend (Java 17) | `./mvnw -B -ntp verify` — compiles, runs all tests, packages the jar |
+| Job                | Runs                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| Backend (Java 17)  | `./mvnw -B -ntp verify` — compiles, runs all tests, packages the jar                        |
 | Frontend (Node 24) | `npm ci`, then `npm run lint` and `npm run build` (the build also type-checks via `tsc -b`) |
 
 The backend job needs **no MySQL instance and no secrets**. `src/test/resources/application.properties`
@@ -223,7 +223,7 @@ docker compose -f docker-compose.prod.yml up -d
 
 Prod starts with an empty `users` table (`DataSeeder` is dev-only), so
 `BootstrapAdminSeeder` creates the first `ADMIN` **only** when
-`APP_BOOTSTRAP_ADMIN_EMAIL` + `APP_BOOTSTRAP_ADMIN_PASSWORD` are set *and* the
+`APP_BOOTSTRAP_ADMIN_EMAIL` + `APP_BOOTSTRAP_ADMIN_PASSWORD` are set _and_ the
 table is empty. Set them in `.env` for the first boot, log in, then blank them
 out (the empty-table guard stops it re-running). The admin has no linked employee
 record; create a profile later via the UI if wanted.
@@ -251,43 +251,48 @@ subdomain is fine); and ports **80** and **443** reachable. Budget ~15–20 minu
 
 1. **Get the files onto the host.** Clone this repo (or your fork) onto the host —
    you need `docker-compose.prod.yml`, `Caddyfile`, and `.env.example`:
+
    ```bash
    git clone <your-repo-url> employee-creator && cd employee-creator
    ```
 
 2. **Point a hostname at the host.** Create a DNS record (e.g. a DuckDNS subdomain
    like `my-team.duckdns.org`) resolving to the host's public IP. Open ingress for
-   ports **80** and **443** in *both* your cloud firewall/security list **and** the
+   ports **80** and **443** in _both_ your cloud firewall/security list **and** the
    OS firewall (Oracle images block these by default). HTTPS is mandatory — the prod
    session cookie is `Secure`, so login fails over plain `http://`.
 
-3. **Use *your* hostname in two places** (the repo ships the author's placeholder
-   `springstaff.duckdns.org` — replace it):
+3. **Use _your_ hostname in two places** (the repo ships the author's placeholder
+   `spring-staff.duckdns.org` — replace it):
    - `Caddyfile` — change the site address to your hostname.
    - `.env` — set `APP_CORS_ALLOWED_ORIGINS` to `https://<your-hostname>` (next step).
 
 4. **Create your `.env`** from the template and fill in real values:
+
    ```bash
    cp .env.example .env
    # edit .env: DB_USERNAME/DB_PASSWORD (your choice), APP_CORS_ALLOWED_ORIGINS,
    # and APP_BOOTSTRAP_ADMIN_EMAIL/APP_BOOTSTRAP_ADMIN_PASSWORD for the first admin
    ```
+
    `.env` is git-ignored and stays only on this host — never commit it.
 
 5. **Choose an image source.** `docker-compose.prod.yml` references
-   `ghcr.io/thejsun/employee-creator:latest` (this project's image). For your own
+   `ghcr.io/thejsun/springstaff:latest` (this project's image). For your own
    copy either:
    - **Build from source on the host** (fully self-contained) — add `build: .` under
      the `app` service (keeping or removing `image:`), then `docker compose -f
-     docker-compose.prod.yml up -d --build`. Note the multi-stage build needs enough
+docker-compose.prod.yml up -d --build`. Note the multi-stage build needs enough
      RAM (comfortable on an Ampere A1; tight on a 1 GB micro VM).
    - **Or** push your own built image to your own registry and point the `image:`
      line at it.
 
 6. **Launch:**
+
    ```bash
    docker compose -f docker-compose.prod.yml up -d
    ```
+
    On first start, MySQL initialises the `db_data` volume, Flyway applies the schema,
    the app creates your bootstrap admin, and Caddy fetches a TLS certificate.
 
@@ -300,7 +305,7 @@ subdomain is fine); and ports **80** and **443** reachable. Budget ~15–20 minu
    guard already stops the seeder re-running, but don't leave the password lying in
    `.env`).
 
-**Automating redeploys (optional):** wire up CD as above against *your* registry and
+**Automating redeploys (optional):** wire up CD as above against _your_ registry and
 host — set the `SSH_*` and `DEPLOY_URL` repository secrets and point the image name
 at your own package. Without it, deploying an update is just `git pull && docker
 compose -f docker-compose.prod.yml up -d --build` on the host.
