@@ -5,6 +5,7 @@ import DepartmentsPage from "./pages/DepartmentsPage/DepartmentsPage";
 import AuditLogPage from "./pages/AuditLogPage/AuditLogPage";
 import { EmployeeDetailsPage } from "./pages/EmployeeDetailsPage/EmployeeDetailsPage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
+import { NotFoundPage } from "./pages/NotFoundPage/NotFoundPage";
 import { RequireAuth } from "./components/RequireAuth/RequireAuth";
 import { RequireAdmin } from "./components/RequireAdmin/RequireAdmin";
 
@@ -29,6 +30,8 @@ function App() {
               <Route path="/audit-logs" element={<AuditLogPage />} />
             </Route>
           </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </div>

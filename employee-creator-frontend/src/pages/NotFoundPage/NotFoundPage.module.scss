@@ -1,0 +1,64 @@
+// NotFoundPage.module.scss
+@use "../../scss/mixins/media" as q;
+
+.page {
+  display: flex;
+  min-height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background-color: #f6f5f2;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 440px;
+  text-align: center;
+}
+
+.logo {
+  margin-bottom: 28px;
+}
+
+.code {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 88px;
+  line-height: 1;
+  color: var(--accent);
+
+  @include q.lg {
+    font-size: 120px;
+  }
+}
+
+.title {
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.1;
+  color: #14182e;
+
+  em {
+    font-style: italic;
+  }
+
+  @include q.lg {
+    font-size: 42px;
+  }
+}
+
+.message {
+  margin: 14px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #52525b;
+}
+
+.home {
+  margin-top: 28px;
+}
