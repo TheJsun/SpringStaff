@@ -206,7 +206,7 @@ image), a `mysql:8` container with a persistent `db_data` volume, and a **Caddy*
 reverse proxy that terminates HTTPS. TLS is **required**, not optional — the prod
 session cookie is `Secure`, so login silently fails over plain `http://`. Caddy
 obtains a Let's Encrypt certificate automatically, which needs a real hostname
-(the free DuckDNS subdomain `spring-staff.duckdns.org`) pointed at the VM's IP,
+(the free DuckDNS subdomain `springstaff.duckdns.org`) pointed at the VM's IP,
 not a bare address. Behind the proxy the app sets
 `server.forward-headers-strategy=framework` so `LoginRateLimiter` sees the real
 client IP.
@@ -262,7 +262,7 @@ subdomain is fine); and ports **80** and **443** reachable. Budget ~15–20 minu
    session cookie is `Secure`, so login fails over plain `http://`.
 
 3. **Use *your* hostname in two places** (the repo ships the author's placeholder
-   `spring-staff.duckdns.org` — replace it):
+   `springstaff.duckdns.org` — replace it):
    - `Caddyfile` — change the site address to your hostname.
    - `.env` — set `APP_CORS_ALLOWED_ORIGINS` to `https://<your-hostname>` (next step).
 
