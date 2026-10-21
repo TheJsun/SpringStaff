@@ -2,6 +2,10 @@ services:
   db:
     image: mysql:8
     restart: unless-stopped
+    # Trimmed for a 1 GB host: small buffer pool, performance_schema off.
+    command:
+      - --innodb-buffer-pool-size=128M
+      - --performance-schema=OFF
     environment:
       MYSQL_DATABASE: employee_creator
       MYSQL_USER: ${DB_USERNAME}
@@ -33,6 +37,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
       SERVER_FORWARD_HEADERS_STRATEGY: framework
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xss512k"
       APP_BOOTSTRAP_ADMIN_EMAIL: ${APP_BOOTSTRAP_ADMIN_EMAIL:-}
       APP_BOOTSTRAP_ADMIN_PASSWORD: ${APP_BOOTSTRAP_ADMIN_PASSWORD:-}
     expose:
