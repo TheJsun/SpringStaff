@@ -12,16 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Creates the very first ADMIN account so a freshly deployed instance can be
- * logged into. Unlike {@link DataSeeder} this is NOT dev-only: it is safe in
- * prod because it does nothing unless both bootstrap properties are set AND the
- * users table is empty. The password is supplied at runtime via the environment
- * ({@code APP_BOOTSTRAP_ADMIN_PASSWORD}) and never committed. After the first
- * boot the env vars can be removed; the empty-table guard stops it re-running.
- * The created admin has no linked employee ({@code users.employee_id} is
- * nullable); a profile can be created later through the UI.
- */
 @Component
 public class BootstrapAdminSeeder implements CommandLineRunner {
 
@@ -63,7 +53,7 @@ public class BootstrapAdminSeeder implements CommandLineRunner {
     );
     log.warn(
       "Bootstrap admin created for {}. Remove APP_BOOTSTRAP_ADMIN_* from the " +
-      "environment and change this password after first login.",
+        "environment and change this password after first login.",
       email
     );
   }

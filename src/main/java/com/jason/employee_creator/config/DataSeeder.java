@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-// Demo-only data with known passwords - must never run outside dev.
 @Profile("dev")
 public class DataSeeder implements CommandLineRunner {
 

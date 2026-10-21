@@ -16,7 +16,9 @@ public class WebConfig implements WebMvcConfigurer {
   private final String[] allowedOrigins;
 
   public WebConfig(
-    @Value("${app.cors.allowed-origins:http://localhost:5173}") String[] allowedOrigins
+    @Value(
+      "${app.cors.allowed-origins:http://localhost:5173}"
+    ) String[] allowedOrigins
   ) {
     this.allowedOrigins = allowedOrigins;
   }
@@ -31,16 +33,6 @@ public class WebConfig implements WebMvcConfigurer {
       .allowCredentials(true);
   }
 
-  /**
-   * Single-page-app fallback for a same-origin deployment: the built SPA is
-   * served from classpath:/static (the Docker build copies it there). Requests
-   * that match a real static file are served as-is; client-side routes such as
-   * /employees/5 fall back to index.html so a deep link or page refresh works.
-   * API and actuator paths are never rewritten — they 404 normally if unmapped.
-   *
-   * <p>In local dev there is no bundled SPA (the frontend runs on Vite), so this
-   * resolver simply finds nothing and requests 404 — harmless.
-   */
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
     registry
