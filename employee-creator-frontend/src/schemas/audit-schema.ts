@@ -13,7 +13,6 @@ export interface AuditLogResponse {
   entityType: string;
   entityId: number;
   entityLabel: string;
-  // The backend serialises the JsonNode `details` as a JSON array of changes.
   details: FieldChange[];
   createdAt: string;
 }
@@ -23,7 +22,6 @@ export interface AuditActor {
   actorEmail: string;
 }
 
-// Mirror of Spring Data's Page<T> envelope (only the fields the UI reads).
 export interface SpringPage<T> {
   content: T[];
   totalElements: number;
