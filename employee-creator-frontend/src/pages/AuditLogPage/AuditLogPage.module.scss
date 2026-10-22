@@ -1,11 +1,11 @@
-@use "../../scss/mixins/media" as q;
-
 .auditPage {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
   align-items: center;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .content {
@@ -15,7 +15,7 @@
   align-items: center;
   gap: 1em;
   width: 100%;
-  flex: 1;
+  flex: 1 0 auto;
 }
 
 .contentInner {
@@ -24,21 +24,11 @@
   width: 100%;
   max-width: var(--content-max-width);
   margin: -70px;
+  margin-bottom: 0;
   background-color: #ffffff;
   border: 1px solid #e7e8ef;
   border-radius: 10px;
   overflow: hidden;
-}
-
-@include q.md {
-  .auditPage {
-    overflow: hidden;
-  }
-
-  .content {
-    flex: 1;
-    min-height: 0;
-  }
 }
 
 .toolbar {

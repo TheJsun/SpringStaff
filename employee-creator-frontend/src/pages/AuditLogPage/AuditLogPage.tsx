@@ -24,6 +24,7 @@ const AuditLogPage = () => {
     bodyRef: listBodyRef,
     footerRef: paginationRef,
     minRows: 3,
+    gutter: 24,
     rowHeightVar: "--audit-row-min-height",
   });
 
