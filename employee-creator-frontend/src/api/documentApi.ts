@@ -27,8 +27,6 @@ export const uploadDocument = async (
   formData.append("file", file);
   formData.append("name", name);
 
-  // Deliberately no Content-Type header: the browser sets multipart/form-data
-  // with the correct boundary itself.
   const response = await apiFetch(documentsUrl(employeeId), {
     method: "POST",
     body: formData,
@@ -43,7 +41,10 @@ export const uploadDocument = async (
   return (await response.json()) as DocumentResponse;
 };
 
-export const deleteDocument = async (employeeId: number, documentId: number) => {
+export const deleteDocument = async (
+  employeeId: number,
+  documentId: number,
+) => {
   const response = await apiFetch(`${documentsUrl(employeeId)}/${documentId}`, {
     method: "DELETE",
     credentials: "include",
