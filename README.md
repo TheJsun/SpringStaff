@@ -137,9 +137,36 @@ VITE_API_URL=http://localhost:8080/api
 Other useful scripts (run from `employee-creator-frontend/`):
 
 ```bash
-npm run build   # type-check and build for production
-npm run lint    # run ESLint
+npm run build        # type-check and build for production
+npm run lint         # run ESLint
+npm test             # run the Vitest suite once
+npm run test:watch   # re-run tests on file changes
 ```
+
+### Frontend tests
+
+Component tests use **Vitest** (jsdom environment, globals enabled) with **React
+Testing Library**, `@testing-library/user-event` and `jest-dom` matchers. Config
+lives in the `test` block of `employee-creator-frontend/vite.config.ts`. Tests are
+co-located with their component as `Component.test.tsx`.
+
+Shared helpers live in `src/test/`:
+
+- `setup.ts` — registers the `jest-dom` matchers and runs `cleanup()` after each test.
+- `renderWithProviders.tsx` — renders UI inside `QueryClientProvider` (retries
+  off), `AuthContext` and a `MemoryRouter`. Accepts `auth`, `route` and
+  `queryClient` options, and exports `makeAuth()` plus `adminUser` / `employeeUser`.
+- `fixtures.ts` — typed mock department, employee, document and audit-log responses.
+
+```tsx
+renderWithProviders(
+  <EmployeeCard employee={mockEmployee} onDelete={vi.fn()} onEdit={vi.fn()} />,
+  { auth: makeAuth({ user: adminUser }), route: "/employees" },
+);
+```
+
+CSS is not processed under test (`css: false`), so SCSS module classes are
+stubbed — query by role, text or accessible name, never by class name.
 
 ## Continuous integration
 
@@ -166,13 +193,6 @@ installed locally, a green local build does not guarantee a green CI build.
 Surefire reports are uploaded as a build artifact on every run, including
 failures, so you can download them from the Actions tab instead of reproducing
 locally.
-
-### Not yet covered
-
-- No frontend test runner (no Vitest/RTL, no test files) — the frontend job gates lint and types only
-- No backend coverage reporting (no JaCoCo)
-- No formatter check (no Prettier or `.editorconfig`)
-- `strict` is not enabled in the TypeScript config, so `tsc -b` is a weaker gate than it appears
 
 ## Deployment
 
