@@ -8,8 +8,6 @@ import {
   employeeUser,
 } from "../../test/renderWithProviders";
 
-// Navbar (rendered inside RequireAuth when authed) fetches the current
-// employee; stub it so the guard test doesn't hit the network.
 vi.mock("../../hooks/useCurrentEmployee", () => ({
   useCurrentEmployee: () => ({ data: undefined, isLoading: false }),
 }));

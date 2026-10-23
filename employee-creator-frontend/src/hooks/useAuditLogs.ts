@@ -7,8 +7,6 @@ export function useAuditLogs(params: AuditLogParams) {
   return useQuery({
     queryKey: ["auditLogs", params],
     queryFn: () => getAuditLogs(params),
-    // Keep the previous page visible while the next one loads so paging and
-    // filtering don't flash an empty list.
     placeholderData: keepPreviousData,
   });
 }

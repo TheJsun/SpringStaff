@@ -164,9 +164,6 @@ public class EmployeeServiceTest {
     );
 
     CreateEmployeeResult result = this.employeeService.create(data);
-
-    // The caller needs the plaintext to hand to the new employee; the row must
-    // hold only the hash. Returning the hash here was what broke first login.
     assertNotNull(
       result.temporaryPassword(),
       "create should return the plaintext temporary password"
@@ -250,7 +247,6 @@ public class EmployeeServiceTest {
 
     this.employeeService.deleteById(1L);
 
-    // The login account has to go first - users.employee_id is a foreign key.
     InOrder inOrder = inOrder(this.userRepository, this.repo);
     inOrder.verify(this.userRepository).delete(linkedUser);
     inOrder.verify(this.repo).delete(employee);
@@ -273,8 +269,6 @@ public class EmployeeServiceTest {
 
     this.employeeService.deleteById(1L);
 
-    // The department lead must be cleared and saved before the employee row is
-    // deleted - departments.lead_id is a foreign key onto employees.
     assertNull(ledDepartment.getLead());
     InOrder inOrder = inOrder(this.departmentRepository, this.repo);
     inOrder.verify(this.departmentRepository).saveAndFlush(ledDepartment);

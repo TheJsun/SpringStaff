@@ -1,10 +1,5 @@
-import type {
-  AuditAction,
-  FieldChange,
-} from "../schemas/audit-schema";
+import type { AuditAction, FieldChange } from "../schemas/audit-schema";
 
-// Fields that are noise in an audit diff: every entity carries its own `id`,
-// and Document rows carry the raw binary `data` payload.
 const HIDDEN_FIELDS = new Set(["id", "data"]);
 
 export const ENTITY_TYPE_OPTIONS = [

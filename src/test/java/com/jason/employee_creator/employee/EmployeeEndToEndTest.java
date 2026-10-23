@@ -169,8 +169,6 @@ public class EmployeeEndToEndTest extends ApiIntegrationTest {
     String session = adminSession();
     Department department = createDepartment("Engineering");
 
-    // The whole point of the generated password: the admin can read it off the
-    // create response and the new employee can sign in with it.
     String temporaryPassword = given()
       .cookie(SESSION_COOKIE, session)
       .contentType(ContentType.JSON)
@@ -222,8 +220,6 @@ public class EmployeeEndToEndTest extends ApiIntegrationTest {
       .extract()
       .path("temporaryPassword");
 
-    // The login identity is stored lowercased, so lookup finds it regardless of
-    // how the admin typed the address.
     given()
       .contentType(ContentType.JSON)
       .body(

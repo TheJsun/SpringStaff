@@ -4,8 +4,6 @@ import classes from "./FilterDropdown.module.scss";
 export interface FilterOption {
   value: string;
   label: string;
-  // Optional: server-side filters (e.g. the audit log) can't cheaply supply
-  // per-option counts, so the count column is hidden when it's omitted.
   count?: number;
 }
 
@@ -28,14 +26,8 @@ export default function FilterDropdown({
   onChange,
   disabled = false,
 }: FilterDropdownProps) {
-  const {
-    isOpen,
-    setIsOpen,
-    containerRef,
-    triggerRef,
-    panelRef,
-    panelStyle,
-  } = useDropdownPanel();
+  const { isOpen, setIsOpen, containerRef, triggerRef, panelRef, panelStyle } =
+    useDropdownPanel();
 
   const selected = options.find((option) => option.value === value);
 
