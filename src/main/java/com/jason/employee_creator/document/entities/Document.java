@@ -1,6 +1,7 @@
 package com.jason.employee_creator.document.entities;
 
 import com.jason.employee_creator.audit.Auditable;
+import com.jason.employee_creator.audit.NotAudited;
 import com.jason.employee_creator.employee.entities.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,10 +35,6 @@ public class Document implements Auditable {
   @Column(nullable = false)
   private long sizeBytes;
 
-  @Lob
-  @Column(nullable = false, length = 50 * 1024 * 1024)
-  private byte[] data;
-
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "employee_id", nullable = false)
   private Employee employee;
@@ -50,6 +47,10 @@ public class Document implements Auditable {
 
   @Column(nullable = false)
   private LocalDateTime uploadedAt;
+
+  @NotAudited
+  @Column(nullable = false, unique = true, length = 512)
+  private String s3Key;
 
   public Document() {}
 
@@ -93,14 +94,6 @@ public class Document implements Auditable {
     this.sizeBytes = sizeBytes;
   }
 
-  public byte[] getData() {
-    return data;
-  }
-
-  public void setData(byte[] data) {
-    this.data = data;
-  }
-
   public Employee getEmployee() {
     return employee;
   }
@@ -135,5 +128,13 @@ public class Document implements Auditable {
 
   public String auditLabel() {
     return name;
+  }
+
+  public String getS3Key() {
+    return s3Key;
+  }
+
+  public void setS3Key(String s3Key) {
+    this.s3Key = s3Key;
   }
 }

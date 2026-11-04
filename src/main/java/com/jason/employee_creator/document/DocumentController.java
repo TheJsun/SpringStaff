@@ -2,9 +2,8 @@ package com.jason.employee_creator.document;
 
 import com.jason.employee_creator.document.dtos.DocumentResponse;
 import com.jason.employee_creator.document.entities.Document;
+import java.net.URI;
 import java.util.List;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,22 +49,16 @@ public class DocumentController {
   }
 
   @GetMapping("/{documentId}/content")
-  public ResponseEntity<byte[]> downloadDocument(
+  public ResponseEntity<Void> downloadDocument(
     @PathVariable Long employeeId,
     @PathVariable Long documentId
   ) {
-    Document document =
-      this.documentService.getForDownload(employeeId, documentId);
+    String downloadUrl =
+      this.documentService.getDownloadUrl(employeeId, documentId);
 
-    ContentDisposition disposition = ContentDisposition
-      .inline()
-      .filename(document.getFileName())
+    return ResponseEntity.status(HttpStatus.FOUND)
+      .location(URI.create(downloadUrl))
       .build();
-
-    return ResponseEntity.ok()
-      .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
-      .contentType(MediaType.parseMediaType(document.getContentType()))
-      .body(document.getData());
   }
 
   @DeleteMapping("/{documentId}")

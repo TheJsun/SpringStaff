@@ -35,15 +35,18 @@ public class DocumentService {
 
   private final DocumentRepository documentRepository;
   private final EmployeeRepository employeeRepository;
+  private final S3StorageService storageService;
 
   public DocumentService(
     DocumentRepository documentRepository,
     EmployeeRepository employeeRepository,
-    AuditService auditService
+    AuditService auditService,
+    S3StorageService storageService
   ) {
     this.documentRepository = documentRepository;
     this.employeeRepository = employeeRepository;
     this.auditService = auditService;
+    this.storageService = storageService;
   }
 
   @PreAuthorize("hasRole('ADMIN') or #employeeId == principal.employeeId")
@@ -82,7 +85,6 @@ public class DocumentService {
     document.setFileName(file.getOriginalFilename());
     document.setContentType(contentType);
     document.setSizeBytes(file.getSize());
-    document.setData(readBytes(file));
     document.setEmployee(owner);
     document.setUploadedByUserId(uploader.getId());
     document.setUploadedByName(resolveUploaderName(uploader));
@@ -100,8 +102,13 @@ public class DocumentService {
   }
 
   @PreAuthorize("hasRole('ADMIN') or #employeeId == principal.employeeId")
-  public Document getForDownload(Long employeeId, Long documentId) {
-    return findOwnedDocument(employeeId, documentId);
+  public String getDownloadUrl(Long employeeId, Long documentId) {
+    Document document = findOwnedDocument(employeeId, documentId);
+    return this.storageService.presignDownload(
+      document.getS3Key(),
+      document.getFileName(),
+      document.getContentType()
+    );
   }
 
   @PreAuthorize("hasRole('ADMIN') or #employeeId == principal.employeeId")
