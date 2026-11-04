@@ -1,10 +1,10 @@
 # Employee Creator
 
-A full-stack app for managing employees and departments: a Spring Boot REST API backed by MySQL, with a React frontend.
+A full-stack app for managing employees and departments: a Spring Boot REST API backed by MySQL, with a React frontend. Employee documents are stored in AWS S3.
 
 ## Architecture
 
-- **Backend** (repo root): Spring Boot 4.1.1 / Java 17, package-by-feature under `src/main/java/com/jason/employee_creator/` (`employee/`, `department/`, `common/` for shared exceptions and error handling, `config/` for security, CORS and ModelMapper setup, `user/` and `auth/` for authentication). Persistence via Spring Data JPA/Hibernate against MySQL (H2 in-memory for tests). REST endpoints are exposed at `/api/employees` and `/api/departments`.
+- **Backend** (repo root): Spring Boot 4.1.1 / Java 17, package-by-feature under `src/main/java/com/jason/employee_creator/` (`employee/`, `department/`, `common/` for shared exceptions and error handling, `config/` for security, CORS and ModelMapper setup, `user/` and `auth/` for authentication). Persistence via Spring Data JPA/Hibernate against MySQL (H2 in-memory for tests). Document files live in an S3 bucket (`document/`, `config/S3Config.java`); MySQL holds only their metadata. REST endpoints are exposed at `/api/employees`, `/api/employees/{id}/documents` and `/api/departments`.
 - **Frontend** (`employee-creator-frontend/`): React 19 + TypeScript, built with Vite. Server state is managed with React Query, forms with react-hook-form + Zod, styling with CSS Modules/SCSS.
 
 ## Prerequisites
@@ -12,6 +12,7 @@ A full-stack app for managing employees and departments: a Spring Boot REST API 
 - Java 17
 - Node.js (for the frontend)
 - A running MySQL instance (or adjust `spring.datasource.url` in `src/main/resources/application.properties` to point at your own)
+- An AWS account with an S3 bucket and credentials for it (see [Document storage (S3)](#document-storage-s3))
 
 ## Configuration profiles
 
@@ -39,6 +40,10 @@ export DB_PASSWORD=your-password
 `DB_USERNAME` / `DB_PASSWORD` are not committed. The schema `employee_creator`
 must exist; Flyway creates the tables (see Database migrations below).
 
+Document features also need AWS credentials. Put them in `~/.aws/credentials`
+(see [Document storage (S3)](#document-storage-s3)); the app starts without
+them, but presigning document URLs fails.
+
 Tests run with:
 
 ```bash
@@ -65,6 +70,10 @@ SPRING_PROFILES_ACTIVE=prod \
   ./mvnw spring-boot:run
 # success = Flyway applies V1 and Hibernate "validate" passes with no error
 ```
+
+`V2__documents_s3.sql` moves document storage to S3: it **deletes all existing
+documents**, drops the `data` `LONGBLOB` column and adds a unique `s3_key`
+column. Documents uploaded before V2 are not migrated.
 
 ## Authentication
 
@@ -119,6 +128,101 @@ email): 5 failed attempts trigger a 15-minute lockout returning `429`. State is
 in-memory, which is correct for a single instance; scaling horizontally would
 require moving it to a shared store (e.g. Redis). Behind a proxy/load balancer,
 set `server.forward-headers-strategy=framework` so the real client IP is used.
+
+## Document storage (S3)
+
+Document files are stored in a private S3 bucket. The `documents` table holds only
+metadata (name, file name, type, size, uploader) and the object's `s3_key`. File
+bytes never pass through the Spring app: the browser talks to S3 directly using
+short-lived (5-minute) **presigned URLs**, while the API keeps doing the
+authorization (`@PreAuthorize`: admin, or the document's own employee),
+validation and audit logging.
+
+- **Download:** `GET /api/employees/{id}/documents/{documentId}/content` checks
+  access, then responds `302 Found` with a presigned S3 GET URL in `Location`.
+  The browser follows it automatically; the URL sets the response content type
+  and an `inline` disposition so PDFs and images open in the browser.
+- **Upload (in progress):** the planned flow is (1) the client requests a
+  presigned PUT URL from the API, which validates type and size and chooses the
+  object key `employees/{employeeId}/{uuid}`; (2) the browser `PUT`s the file
+  straight to S3; (3) the client confirms with the API, which checks the object
+  really exists in S3 (and its real size) before saving the `documents` row. Until
+  this lands, uploads fail because nothing sets `s3_key`.
+
+S3 access is wrapped in `document/S3StorageService.java`. The `S3Client` and
+`S3Presigner` beans in `config/S3Config.java` use the AWS SDK's default
+credentials chain, so no keys are configured in the app itself.
+
+| Property        | Default             | Meaning                             |
+| --------------- | ------------------- | ----------------------------------- |
+| `app.s3.region` | `us-east-1`         | Region of the bucket                |
+| `app.s3.bucket` | `springstaff-files` | Bucket that stores document objects |
+
+Both can be overridden with environment variables (`APP_S3_REGION`,
+`APP_S3_BUCKET`). Keep the bucket in the same region as the EC2 host.
+
+### AWS setup
+
+1. **Bucket:** create it with **Block all public access** left on. Presigned URLs
+   work against a private bucket.
+2. **Bucket CORS** (Permissions → CORS). Without this the browser's direct `PUT`
+   to S3 fails its preflight:
+
+   ```json
+   [
+     {
+       "AllowedOrigins": ["https://springstaff.duckdns.org", "http://localhost:5173"],
+       "AllowedMethods": ["PUT", "GET"],
+       "AllowedHeaders": ["Content-Type"],
+       "ExposeHeaders": ["ETag"],
+       "MaxAgeSeconds": 3000
+     }
+   ]
+   ```
+
+3. **Permissions policy:** create one customer-managed policy (e.g.
+   `springstaff-s3-access`) and attach it to both identities below:
+
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+         "Resource": "arn:aws:s3:::springstaff-files/*"
+       }
+     ]
+   }
+   ```
+
+   A presigned URL carries the permissions of whoever signed it, so the app's
+   identity needs these actions for the URLs to work.
+
+4. **Credentials:** you need one **IAM role** for production and one **IAM user**
+   for local development.
+   - **Production (EC2):** an IAM role with EC2 as its trusted entity, attached to
+     the instance. The SDK picks up temporary, auto-rotating credentials from
+     the instance metadata service, so there are no keys in `.env`. Because the app
+     runs in a Docker container, raise the metadata hop limit to 2, or the
+     container can't reach it ("Unable to load credentials"):
+
+     ```bash
+     aws ec2 modify-instance-metadata-options --instance-id <instance-id> \
+       --http-endpoint enabled --http-put-response-hop-limit 2
+     ```
+
+   - **Local development:** an IAM user with an access key. Put the key in
+     `~/.aws/credentials` (or run `aws configure`), which lives outside the repo:
+
+     ```ini
+     [default]
+     aws_access_key_id = AKIA...
+     aws_secret_access_key = ...
+     ```
+
+     Environment variables `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` work too.
+     Never commit keys; if one leaks, deactivate it in IAM and create a new one.
 
 ## Running the frontend
 
@@ -213,13 +317,16 @@ docker run --rm -p 8080:8080 \
 The image pins `SPRING_PROFILES_ACTIVE=prod` and runs as a non-root user. Point
 your platform's health check at `GET /actuator/health` (returns
 `{"status":"UP"}`). Provision **managed MySQL** rather than a DB container with
-ephemeral storage.
+ephemeral storage. The container also needs AWS credentials for document storage.
+On EC2 these come from the instance's IAM role; elsewhere, pass
+`-e AWS_ACCESS_KEY_ID=... -e AWS_SECRET_ACCESS_KEY=...` (see
+[Document storage (S3)](#document-storage-s3)).
 
 For a split-domain deploy instead (SPA on a static host), build the frontend with
 `VITE_API_URL` set to the API's absolute URL, set `app.cors.allowed-origins` to
 the SPA origin, and change the prod session cookie to `same-site=none`.
 
-### Single-VM stack (Oracle Cloud Always Free)
+### Single-host stack (AWS EC2)
 
 `docker-compose.prod.yml` runs the whole thing on one box: the app (from the GHCR
 image), a `mysql:8` container with a persistent `db_data` volume, and a **Caddy**
@@ -229,10 +336,11 @@ obtains a Let's Encrypt certificate automatically, which needs a real hostname
 (the free DuckDNS subdomain `springstaff.duckdns.org`) pointed at the VM's IP,
 not a bare address. Behind the proxy the app sets
 `server.forward-headers-strategy=framework` so `LoginRateLimiter` sees the real
-client IP.
+client IP. Document files are not on the host; they live in S3, and the app
+reaches the bucket through the instance's IAM role.
 
-On the VM: clone the repo, copy `.env.example` to `.env` and fill it in (it is
-git-ignored), then:
+On the instance: clone the repo, copy `.env.example` to `.env` and fill it in (it
+is git-ignored), then:
 
 ```bash
 docker compose -f docker-compose.prod.yml pull
@@ -262,12 +370,13 @@ on the VM) so `pull` works.
 
 This is a **single-tenant, self-hosted** app: there is no shared service to sign up
 for — each team runs its own independent instance with its own database, its own
-admin, and its own URL. The steps below stand one up from scratch. The free
-reference host is an **Oracle Cloud Always Free** VM, but any Docker host works.
+admin, and its own URL. The steps below stand one up from scratch. The reference
+host is an **AWS EC2** instance, but any Docker host works.
 
 **You'll need:** a Docker host with the Docker Engine + Compose plugin installed; a
 hostname you control pointing at it (a free [DuckDNS](https://www.duckdns.org)
-subdomain is fine); and ports **80** and **443** reachable. Budget ~15–20 minutes.
+subdomain is fine); ports **80** and **443** reachable; and an S3 bucket for
+documents. Budget ~20–30 minutes.
 
 1. **Get the files onto the host.** Clone this repo (or your fork) onto the host —
    you need `docker-compose.prod.yml`, `Caddyfile`, and `.env.example`:
@@ -278,9 +387,18 @@ subdomain is fine); and ports **80** and **443** reachable. Budget ~15–20 minu
 
 2. **Point a hostname at the host.** Create a DNS record (e.g. a DuckDNS subdomain
    like `my-team.duckdns.org`) resolving to the host's public IP. Open ingress for
-   ports **80** and **443** in _both_ your cloud firewall/security list **and** the
-   OS firewall (Oracle images block these by default). HTTPS is mandatory — the prod
+   ports **80** and **443** in your cloud firewall (on EC2, the instance's security
+   group) and in the OS firewall if it has one. HTTPS is mandatory — the prod
    session cookie is `Secure`, so login fails over plain `http://`.
+
+   **Set up document storage.** Create the S3 bucket, its CORS rule (with
+   `https://<your-hostname>` as an allowed origin) and the permissions policy, as
+   described in [AWS setup](#aws-setup). On EC2, attach the IAM role to the
+   instance and set the metadata hop limit to 2. On any other host, put
+   `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` in `.env` and pass them through
+   in the `app` service's `environment:` block in `docker-compose.prod.yml`. If
+   your bucket isn't `springstaff-files` in `us-east-1`, pass `APP_S3_BUCKET` /
+   `APP_S3_REGION` the same way.
 
 3. **Use _your_ hostname in two places** (the repo ships the author's placeholder
    `spring-staff.duckdns.org` — replace it):
@@ -303,7 +421,7 @@ subdomain is fine); and ports **80** and **443** reachable. Budget ~15–20 minu
    - **Build from source on the host** (fully self-contained) — add `build: .` under
      the `app` service (keeping or removing `image:`), then `docker compose -f
 docker-compose.prod.yml up -d --build`. Note the multi-stage build needs enough
-     RAM (comfortable on an Ampere A1; tight on a 1 GB micro VM).
+     RAM (comfortable with 2 GB or more; tight on a 1 GB instance such as a `t3.micro`).
    - **Or** push your own built image to your own registry and point the `image:`
      line at it.
 
