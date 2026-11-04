@@ -28,8 +28,25 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<aws.java.sdk.version>2.27.21</aws.java.sdk.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>bom</artifactId>
+				<version>${aws.java.sdk.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>	
+	</dependencyManagement>
+	
 	<dependencies>
+	    <dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -113,8 +130,6 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-		<!-- Merges META-INF/additional-spring-configuration-metadata.json into the
-		     generated metadata so the IDE recognizes our custom app.* properties -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
@@ -135,12 +150,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-
-		<!-- Versioned schema migrations; replaces Hibernate ddl-auto=update in prod.
-		     Spring Boot 4 modularized auto-configuration, so the raw flyway-core
-		     library no longer wires Flyway on its own; the starter pulls in the
-		     spring-boot-flyway auto-config module (and flyway-core) that runs
-		     migrations on startup and supplies the spring.flyway.* metadata. -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-flyway</artifactId>
