@@ -59,7 +59,7 @@ public class S3StorageService {
       .bucket(bucket)
       .key(key)
       .contentType(contentType)
-      .contentLength(null)
+      .contentLength(sizeBytes)
       .build();
 
     return presigner

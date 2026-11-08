@@ -9,6 +9,7 @@ import com.jason.employee_creator.document.dtos.UploadUrlResponse;
 import com.jason.employee_creator.document.entities.Document;
 import com.jason.employee_creator.employee.EmployeeRepository;
 import com.jason.employee_creator.employee.entities.Employee;
+import com.jason.employee_creator.user.CurrentUser;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,6 +17,8 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
@@ -63,8 +66,8 @@ public class DocumentService {
     Long employeeId,
     UploadUrlRequest req
   ) {
+    requireEmployee(employeeId);
     if (req.sizeBytes() > MAX_FILE_SIZE_BYTES) {
-      requireEmployee(employeeId);
       throw new UnprocessableContentException(
         "File exceeds the maximum size of 10 MB"
       );
@@ -88,6 +91,7 @@ public class DocumentService {
   }
 
   @Transactional
+  @PreAuthorize("hasRole('ADMIN') or #employeeId == principal.employeeId")
   public Document confirmUpload(Long employeeId, ConfirmUploadRequest req) {
     Employee employee = requireEmployee(employeeId);
 
@@ -109,15 +113,15 @@ public class DocumentService {
         "File is too large or not a supported type"
       );
     }
-
+    CurrentUser currentUser = currentUser();
     Document createdDocument = new Document();
     createdDocument.setName(req.name());
     createdDocument.setFileName(req.fileName());
     createdDocument.setContentType(head.contentType());
     createdDocument.setSizeBytes(head.contentLength());
     createdDocument.setEmployee(employee);
-    createdDocument.setUploadedByName(employee.getFirstName());
-    createdDocument.setUploadedByUserId(employeeId);
+    createdDocument.setUploadedByName(resolveUploaderName(currentUser));
+    createdDocument.setUploadedByUserId(currentUser.getId());
     createdDocument.setUploadedAt(LocalDateTime.now());
     createdDocument.setS3Key(req.s3Key());
 
@@ -170,5 +174,27 @@ public class DocumentService {
       .orElseThrow(() ->
         new NotFoundException("Could not find Employee with id = " + employeeId)
       );
+  }
+
+  private String resolveUploaderName(CurrentUser uploader) {
+    if (uploader.getEmployeeId() != null) {
+      return this.employeeRepository
+        .findById(uploader.getEmployeeId())
+        .map(emp -> (emp.getFirstName() + " " + emp.getLastName()).trim())
+        .orElse(uploader.getUsername());
+    }
+    return uploader.getUsername();
+  }
+
+  private CurrentUser currentUser() {
+    Authentication authentication =
+      SecurityContextHolder.getContext().getAuthentication();
+    if (
+      authentication != null &&
+      authentication.getPrincipal() instanceof CurrentUser currentUser
+    ) {
+      return currentUser;
+    }
+    throw new UnprocessableContentException("No authenticated user");
   }
 }
