@@ -1,7 +1,6 @@
 package com.jason.employee_creator.document;
 
 import com.jason.employee_creator.audit.AuditService;
-import com.jason.employee_creator.audit.NotAudited;
 import com.jason.employee_creator.common.exceptions.NotFoundException;
 import com.jason.employee_creator.common.exceptions.UnprocessableContentException;
 import com.jason.employee_creator.document.dtos.ConfirmUploadRequest;
@@ -10,23 +9,14 @@ import com.jason.employee_creator.document.dtos.UploadUrlResponse;
 import com.jason.employee_creator.document.entities.Document;
 import com.jason.employee_creator.employee.EmployeeRepository;
 import com.jason.employee_creator.employee.entities.Employee;
-import com.jason.employee_creator.user.CurrentUser;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.transaction.Transactional;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
 @Service
