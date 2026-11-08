@@ -10,7 +10,6 @@ import com.jason.employee_creator.document.entities.Document;
 import com.jason.employee_creator.employee.EmployeeRepository;
 import com.jason.employee_creator.employee.entities.Employee;
 import com.jason.employee_creator.user.CurrentUser;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
 @Service
@@ -127,7 +127,12 @@ public class DocumentService {
 
     this.documentRepository.saveAndFlush(createdDocument);
     this.auditService.recordCreated(createdDocument);
-
+    log.info(
+      "Uploaded document id={} for employee id={} by user id={}",
+      createdDocument.getId(),
+      employeeId,
+      currentUser.getId()
+    );
     return createdDocument;
   }
 
