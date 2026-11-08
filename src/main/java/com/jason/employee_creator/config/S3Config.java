@@ -25,7 +25,17 @@ public class S3Config {
   }
 
   @Bean
-  S3Presigner s3Presigner(@Value("${app.s3.region}") String region) {
-    return S3Presigner.builder().region(Region.of(region)).build();
+  S3Presigner s3Presigner(
+    @Value("${app.s3.region}") String region,
+    @Value("${app.s3.profile:}") String profile
+  ) {
+    S3Presigner.Builder builder = S3Presigner.builder().region(
+      Region.of(region)
+    );
+    if (!profile.isBlank()) {
+      builder.credentialsProvider(ProfileCredentialsProvider.create(profile));
+    }
+
+    return builder.build();
   }
 }
