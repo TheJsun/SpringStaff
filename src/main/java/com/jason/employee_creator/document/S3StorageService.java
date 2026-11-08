@@ -54,11 +54,7 @@ public class S3StorageService {
       .toString();
   }
 
-  public String presignUpload(
-    String key,
-    String contentType,
-    String sizeBytes
-  ) {
+  public String presignUpload(String key, String contentType, Long sizeBytes) {
     PutObjectRequest put = PutObjectRequest.builder()
       .bucket(bucket)
       .key(key)
