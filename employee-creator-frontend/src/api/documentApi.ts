@@ -34,7 +34,10 @@ export const uploadDocument = async (
   });
 
   if (!linkRes.ok) {
-    throw new Error(`Failed to start upload: ${linkRes.status}`);
+    const errorBody = await linkRes.json().catch(() => null);
+    throw new Error(
+      errorBody?.message ?? `Failed to upload document: ${linkRes.status}`,
+    );
   }
   const { key, uploadUrl } = await linkRes.json();
 
@@ -45,7 +48,10 @@ export const uploadDocument = async (
   });
 
   if (!s3Res.ok) {
-    throw new Error(`Upload to storage failed: ${s3Res.status}`);
+    const errorBody = await s3Res.json().catch(() => null);
+    throw new Error(
+      errorBody?.message ?? `Failed to upload document: ${s3Res.status}`,
+    );
   }
 
   const response = await apiFetch(documentsUrl(employeeId), {
@@ -55,7 +61,7 @@ export const uploadDocument = async (
   });
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    return new Error(
+    throw new Error(
       errorBody?.message ?? `Failed to upload document: ${response.status}`,
     );
   }
