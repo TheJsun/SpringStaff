@@ -3,22 +3,105 @@ package com.jason.employee_creator.document;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.jason.employee_creator.employee.entities.Employee;
 import com.jason.employee_creator.support.ApiIntegrationTest;
 import com.jason.employee_creator.user.Role;
-import java.nio.charset.StandardCharsets;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
+import java.util.Map;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
 public class DocumentAuthorizationTest extends ApiIntegrationTest {
 
-  private static final byte[] PDF_BYTES =
-    "%PDF-1.4 fake pdf content".getBytes(StandardCharsets.UTF_8);
+  private static final String UPLOAD_URL = "https://s3.test/upload";
+  private static final String DOWNLOAD_URL = "https://s3.test/download";
+  private static final String FILE_NAME = "contract.pdf";
+  private static final long SIZE_BYTES = 1234L;
+
+  @MockitoBean
+  private S3StorageService storageService;
+
+  @BeforeEach
+  public void stubStorage() {
+    when(storageService.presignUpload(anyString(), anyString(), anyLong()))
+      .thenReturn(UPLOAD_URL);
+    when(storageService.presignDownload(anyString(), anyString(), anyString()))
+      .thenReturn(DOWNLOAD_URL);
+    when(storageService.head(anyString())).thenReturn(
+      Optional.of(
+        HeadObjectResponse.builder()
+          .contentLength(SIZE_BYTES)
+          .contentType("application/pdf")
+          .build()
+      )
+    );
+  }
 
   private String ownerSession(Employee owner, String loginEmail) {
     createUser(loginEmail, Role.EMPLOYEE, owner);
     return login(loginEmail, PASSWORD);
+  }
+
+  private RequestSpecification withSession(String session) {
+    RequestSpecification spec = given();
+    return session == null ? spec : spec.cookie(SESSION_COOKIE, session);
+  }
+
+  private ValidatableResponse requestUploadUrl(
+    String session,
+    Long employeeId,
+    String contentType
+  ) {
+    return withSession(session)
+      .contentType(ContentType.JSON)
+      .body(
+        Map.of(
+          "fileName",
+          FILE_NAME,
+          "contentType",
+          contentType,
+          "sizeBytes",
+          SIZE_BYTES
+        )
+      )
+      .when()
+      .post("/api/employees/" + employeeId + "/documents/upload-url")
+      .then();
+  }
+
+  private ValidatableResponse confirmUpload(
+    String session,
+    Long employeeId,
+    String key,
+    String name
+  ) {
+    return withSession(session)
+      .contentType(ContentType.JSON)
+      .body(Map.of("s3Key", key, "name", name, "fileName", FILE_NAME))
+      .when()
+      .post("/api/employees/" + employeeId + "/documents")
+      .then();
+  }
+
+  private String uploadKey(String session, Long employeeId) {
+    return requestUploadUrl(session, employeeId, "application/pdf")
+      .statusCode(HttpStatus.OK.value())
+      .body("key", startsWith("employees/" + employeeId + "/"))
+      .body("uploadUrl", equalTo(UPLOAD_URL))
+      .extract()
+      .path("key");
   }
 
   @Test
@@ -28,13 +111,15 @@ public class DocumentAuthorizationTest extends ApiIntegrationTest {
       .get("/api/employees/1/documents")
       .then()
       .statusCode(HttpStatus.UNAUTHORIZED.value());
-    given()
-      .multiPart("file", "contract.pdf", PDF_BYTES, "application/pdf")
-      .multiPart("name", "Employment contract")
-      .when()
-      .post("/api/employees/1/documents")
-      .then()
-      .statusCode(HttpStatus.UNAUTHORIZED.value());
+    requestUploadUrl(null, 1L, "application/pdf").statusCode(
+      HttpStatus.UNAUTHORIZED.value()
+    );
+    confirmUpload(
+      null,
+      1L,
+      "employees/1/abc",
+      "Employment contract"
+    ).statusCode(HttpStatus.UNAUTHORIZED.value());
     given()
       .when()
       .delete("/api/employees/1/documents/1")
@@ -47,16 +132,17 @@ public class DocumentAuthorizationTest extends ApiIntegrationTest {
     Employee owner = persistEmployee("Owner", "owner@example.com");
     String session = ownerSession(owner, "owner.login@example.com");
 
-    Integer documentId = given()
-      .cookie(SESSION_COOKIE, session)
-      .multiPart("file", "contract.pdf", PDF_BYTES, "application/pdf")
-      .multiPart("name", "Employment contract")
-      .when()
-      .post("/api/employees/" + owner.getId() + "/documents")
-      .then()
+    String key = uploadKey(session, owner.getId());
+
+    Integer documentId = confirmUpload(
+      session,
+      owner.getId(),
+      key,
+      "Employment contract"
+    )
       .statusCode(HttpStatus.CREATED.value())
       .body("name", equalTo("Employment contract"))
-      .body("fileName", equalTo("contract.pdf"))
+      .body("fileName", equalTo(FILE_NAME))
       .body("uploadedByName", equalTo("Owner Tester"))
       .extract()
       .path("id");
@@ -72,11 +158,15 @@ public class DocumentAuthorizationTest extends ApiIntegrationTest {
 
     given()
       .cookie(SESSION_COOKIE, session)
+      .redirects()
+      .follow(false)
       .when()
-      .get("/api/employees/" + owner.getId() + "/documents/" + documentId + "/content")
+      .get(
+        "/api/employees/" + owner.getId() + "/documents/" + documentId + "/content"
+      )
       .then()
-      .statusCode(HttpStatus.OK.value())
-      .contentType("application/pdf");
+      .statusCode(HttpStatus.FOUND.value())
+      .header("Location", equalTo(DOWNLOAD_URL));
 
     given()
       .cookie(SESSION_COOKIE, session)
@@ -84,6 +174,8 @@ public class DocumentAuthorizationTest extends ApiIntegrationTest {
       .delete("/api/employees/" + owner.getId() + "/documents/" + documentId)
       .then()
       .statusCode(HttpStatus.NO_CONTENT.value());
+
+    verify(storageService).delete(key);
   }
 
   @Test
@@ -100,14 +192,18 @@ public class DocumentAuthorizationTest extends ApiIntegrationTest {
       .then()
       .statusCode(HttpStatus.FORBIDDEN.value());
 
-    given()
-      .cookie(SESSION_COOKIE, otherSession)
-      .multiPart("file", "contract.pdf", PDF_BYTES, "application/pdf")
-      .multiPart("name", "Sneaky upload")
-      .when()
-      .post("/api/employees/" + owner.getId() + "/documents")
-      .then()
-      .statusCode(HttpStatus.FORBIDDEN.value());
+    requestUploadUrl(
+      otherSession,
+      owner.getId(),
+      "application/pdf"
+    ).statusCode(HttpStatus.FORBIDDEN.value());
+
+    confirmUpload(
+      otherSession,
+      owner.getId(),
+      "employees/" + owner.getId() + "/sneaky",
+      "Sneaky upload"
+    ).statusCode(HttpStatus.FORBIDDEN.value());
   }
 
   @Test
@@ -115,13 +211,9 @@ public class DocumentAuthorizationTest extends ApiIntegrationTest {
     Employee owner = persistEmployee("Owner", "owner@example.com");
     String session = adminSession();
 
-    given()
-      .cookie(SESSION_COOKIE, session)
-      .multiPart("file", "contract.pdf", PDF_BYTES, "application/pdf")
-      .multiPart("name", "Employment contract")
-      .when()
-      .post("/api/employees/" + owner.getId() + "/documents")
-      .then()
+    String key = uploadKey(session, owner.getId());
+
+    confirmUpload(session, owner.getId(), key, "Employment contract")
       .statusCode(HttpStatus.CREATED.value())
       .body("name", equalTo("Employment contract"));
   }
@@ -131,13 +223,8 @@ public class DocumentAuthorizationTest extends ApiIntegrationTest {
     Employee owner = persistEmployee("Owner", "owner@example.com");
     String session = ownerSession(owner, "owner.login@example.com");
 
-    given()
-      .cookie(SESSION_COOKIE, session)
-      .multiPart("file", "notes.txt", "hello".getBytes(StandardCharsets.UTF_8), "text/plain")
-      .multiPart("name", "Random notes")
-      .when()
-      .post("/api/employees/" + owner.getId() + "/documents")
-      .then()
-      .statusCode(HttpStatus.UNPROCESSABLE_CONTENT.value());
+    requestUploadUrl(session, owner.getId(), "text/plain").statusCode(
+      HttpStatus.UNPROCESSABLE_CONTENT.value()
+    );
   }
 }
