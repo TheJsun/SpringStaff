@@ -115,7 +115,7 @@ public class DocumentService {
     }
     CurrentUser currentUser = currentUser();
     Document createdDocument = new Document();
-    createdDocument.setName(req.name());
+    createdDocument.setName(req.name().trim());
     createdDocument.setFileName(req.fileName());
     createdDocument.setContentType(head.contentType());
     createdDocument.setSizeBytes(head.contentLength());

@@ -23,18 +23,39 @@ export const uploadDocument = async (
   employeeId: number,
   { file, name }: { file: File; name: string },
 ) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("name", name);
+  const linkRes = await apiFetch(`${documentsUrl(employeeId)}/upload-url`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    }),
+  });
+
+  if (!linkRes.ok) {
+    throw new Error(`Failed to start upload: ${linkRes.status}`);
+  }
+  const { key, uploadUrl } = await linkRes.json();
+
+  const s3Res = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+
+  if (!s3Res.ok) {
+    throw new Error(`Upload to storage failed: ${s3Res.status}`);
+  }
 
   const response = await apiFetch(documentsUrl(employeeId), {
     method: "POST",
-    body: formData,
-    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ s3Key: key, name, fileName: file.name }),
   });
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    throw new Error(
+    return new Error(
       errorBody?.message ?? `Failed to upload document: ${response.status}`,
     );
   }
