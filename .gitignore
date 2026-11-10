@@ -33,3 +33,9 @@ build/
 .vscode/
 
 .env
+
+##Terraform
+infra/.terraform/
+*.tfstate
+*.tfstate.*
+infra/terraform.tfvars
