@@ -67,6 +67,10 @@ resource "aws_instance" "springstaff" {
     http_put_response_hop_limit = 2
   }
 
+  credit_specification {
+    cpu_credits = "standard"
+  }
+
   user_data = <<-EOF
     #!/bin/bash
     set -e
