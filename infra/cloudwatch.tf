@@ -35,7 +35,7 @@ resource "aws_cloudwatch_metric_alarm" "high-cpu" {
 
 resource "aws_cloudwatch_metric_alarm" "cpu-credit-balance" {
   alarm_name = "springstaff-low-credit-balance"
-  alarm_description = "yea"
+  alarm_description = "CPU credits below 20% for 10 minutes."
   dimensions = { InstanceId = aws_instance.springstaff.id}
   namespace = "AWS/EC2"
   metric_name = "CPUCreditBalance"
