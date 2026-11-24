@@ -44,6 +44,11 @@ resource "aws_iam_role_policy" "springstaff-iam-role-policy" {
         "Action"   = "s3:ListBucket",
         "Resource" = "${aws_s3_bucket.backups.arn}"
       },
+      {
+        "Effect" = "Allow",
+        "Action" = ["logs:CreateLogStream", "logs:PutLogEvents"],
+        "Resource" = "${aws_cloudwatch_log_group.app.arn}:*"
+      }
     ]
   })
 }

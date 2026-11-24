@@ -54,6 +54,10 @@ resource "aws_instance" "springstaff" {
   vpc_security_group_ids = [aws_security_group.springstaff-sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
 
+  lifecycle {
+    ignore_changes = [ami, user_data]
+  }
+
   tags = {
     Name = "springstaff"
   }
