@@ -55,7 +55,7 @@ resource "aws_instance" "springstaff" {
   iam_instance_profile   = aws_iam_instance_profile.ec2.name
 
   tags = {
-    name = "springstaff"
+    Name = "springstaff"
   }
   root_block_device {
     volume_type = "gp3"

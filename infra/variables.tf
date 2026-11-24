@@ -24,3 +24,8 @@ variable "instance_type" {
   type        = string
   default     = "t3.micro"
 }
+
+variable "alert_email" {
+  type        = string
+  description = "email for cloudwatch alerts to be sent to"
+}
